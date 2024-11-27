@@ -133,7 +133,7 @@ class EXL2Model:
                 assert result["job"] == job
                 if result["stage"] == "streaming":
                     tokens.append(int(result.get("token_ids", "")[0][0]))
-                    if tokens[-1] == 151645:
+                    if tokens[-1] == self.tokenizer.eos_token_id:
                         eos = True
         #print(tokens)
         return tokens
