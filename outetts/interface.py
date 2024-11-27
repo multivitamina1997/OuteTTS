@@ -1,8 +1,10 @@
 import torch
 from .version.v1.interface import InterfaceHF as _InterfaceHF_v1
 from .version.v1.interface import InterfaceGGUF as _InterfaceGGUF_v1
+from .version.v1.interface import InterfaceEXL2 as _InterfaceEXL2_v1
 from .version.v1.interface import HFModelConfig as HFModelConfig_v1
 from .version.v1.interface import GGUFModelConfig as GGUFModelConfig_v1
+from .version.v1.interface import EXL2ModelConfig as EXL2ModelConfig_v1
 from loguru import logger
 
 MODEL_CONFIGS = {
@@ -21,6 +23,7 @@ MODEL_CONFIGS = {
         "languages": ["en", "ja", "ko", "zh"],
         "hf_interface": _InterfaceHF_v1,
         "gguf_interface": _InterfaceGGUF_v1,
+        "exl2_interface": _InterfaceEXL2_v1,
     },
 }
 
@@ -105,4 +108,33 @@ def InterfaceGGUF(
     cfg.languages = languages
 
     interface_class = config["gguf_interface"]
+    return interface_class(cfg)
+
+def InterfaceEXL2(
+        model_version: str,
+        cfg: EXL2ModelConfig_v1
+    ) -> _InterfaceGGUF_v1:
+    """
+    Creates and returns a GGUF model interface for OuteTTS.
+
+    Parameters
+    ----------
+    model_version : str
+        Version identifier for the model to be loaded
+    cfg : EXL2ModelConfig_v1
+        Configuration object containing parameters
+
+    Returns
+    -------
+    An instance of interface based on the specified version.
+    """
+
+    config = get_model_config(model_version)
+    cfg.tokenizer_path = cfg.tokenizer_path or config["tokenizer"]
+    languages = config["languages"]
+    if cfg.language not in languages:
+        raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
+    cfg.languages = languages
+
+    interface_class = config["exl2_interface"]
     return interface_class(cfg)

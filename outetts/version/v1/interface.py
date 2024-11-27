@@ -1,6 +1,6 @@
 from ...wav_tokenizer.audio_codec import AudioCodec
 from .prompt_processor import PromptProcessor
-from .model import HFModel, GGUFModel, GenerationConfig
+from .model import HFModel, GGUFModel, EXL2Model, GenerationConfig
 import torch
 from .alignment import CTCForcedAlignment
 import torchaudio
@@ -66,7 +66,12 @@ class HFModelConfig:
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
-    n_gpu_layers: int = 0
+    n_gpu_layers: int = 0,
+    max_length: int = 4096,
+
+@dataclass
+class EXL2ModelConfig(HFModelConfig):
+    max_length: int = 4096
 
 @dataclass
 class ModelOutput:
@@ -262,6 +267,7 @@ class InterfaceGGUF(InterfaceHF):
         self.model = GGUFModel(
             model_path=config.model_path,
             n_gpu_layers=config.n_gpu_layers,
+            max_length=config.max_length,
             additional_model_config=config.additional_model_config
         )
 
@@ -274,20 +280,79 @@ class InterfaceGGUF(InterfaceHF):
             text: str, 
             speaker: dict = None, 
             temperature: float = 0.1, 
-            repetition_penalty: float = 1.1, 
-            max_length: int = 4096
+            repetition_penalty: float = 1.1,
+            max_length = None,
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
             logger.info(f"Input tokens: {len(input_ids)}")
             logger.info("Generating audio...")
+        
+        if max_length != None:
+            raise ValueError("max_length must be set in the model config during model creation for GGUF and EXL2 models.")
+        
+        output = self.model.generate(
+            input_ids=input_ids,
+            config=GenerationConfig(
+                temperature=temperature,
+                max_length=config.max_length,
+                repetition_penalty=repetition_penalty,
+            )
+        )
+        audio = self.get_audio(output)
+        if self.verbose:
+            logger.info("Audio generation completed")
 
+        return ModelOutput(audio, self.audio_codec.sr)
+
+class InterfaceEXL2(InterfaceHF):
+    def __init__(
+        self,
+        config: EXL2ModelConfig
+    ) -> None:
+        self.device = torch.device(
+            config.device if config.device is not None
+            else "cuda" if torch.cuda.is_available()
+            else "cpu"
+        )
+        self._device = config.device
+        self.languages = config.languages
+        self.language = config.language
+        self.verbose = config.verbose
+
+        self.audio_codec = AudioCodec(self.device, config.wavtokenizer_model_path)
+        self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
+        self.model = EXL2Model(
+            model_path=config.model_path,
+            max_length=config.max_length,
+            additional_model_config=config.additional_model_config
+        )
+
+    def prepare_prompt(self, text: str, speaker: dict = None):
+        prompt = self.prompt_processor.get_completion_prompt(text, self.language, speaker)
+        return self.prompt_processor.tokenizer.encode(prompt, add_special_tokens=False)
+
+    def generate(
+            self, 
+            text: str, 
+            speaker: dict = None, 
+            temperature: float = 0.1, 
+            repetition_penalty: float = 1.1,
+            max_length = None,
+        ) -> ModelOutput:
+        input_ids = self.prepare_prompt(text, speaker)
+        if self.verbose:
+            logger.info(f"Input tokens: {len(input_ids)}")
+            logger.info("Generating audio...")
+        
+        if max_length != None:
+            raise ValueError("max_length must be set in the model config during model creation for GGUF and EXL2 models.")
+        
         output = self.model.generate(
             input_ids=input_ids,
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
-                max_length=max_length
             )
         )
         audio = self.get_audio(output)
