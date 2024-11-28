@@ -113,7 +113,7 @@ def InterfaceGGUF(
 def InterfaceEXL2(
         model_version: str,
         cfg: EXL2ModelConfig_v1
-    ) -> _InterfaceGGUF_v1:
+    ) -> _InterfaceEXL2_v1:
     """
     Creates and returns a GGUF model interface for OuteTTS.
 
