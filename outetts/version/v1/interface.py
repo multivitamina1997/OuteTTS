@@ -226,7 +226,8 @@ class InterfaceHF:
             speaker: dict = None, 
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1, 
-            max_length: int = 4096
+            max_length: int = 4096,
+            additional_gen_config={},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
@@ -238,7 +239,8 @@ class InterfaceHF:
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
-                max_length=max_length
+                max_length=max_length,
+                additional_gen_config=additional_gen_config,
             )
         )
         audio = self.get_audio(output[input_ids.size()[-1]:])
@@ -282,6 +284,7 @@ class InterfaceGGUF(InterfaceHF):
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1,
             max_length = None,
+            additional_gen_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
@@ -297,6 +300,7 @@ class InterfaceGGUF(InterfaceHF):
                 temperature=temperature,
                 max_length=config.max_length,
                 repetition_penalty=repetition_penalty,
+                additional_gen_config=additional_gen_config,
             )
         )
         audio = self.get_audio(output)
@@ -339,6 +343,7 @@ class InterfaceEXL2(InterfaceHF):
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1,
             max_length = None,
+            additional_gen_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
@@ -353,6 +358,7 @@ class InterfaceEXL2(InterfaceHF):
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
+                additional_gen_config=additional_gen_config,
             )
         )
         audio = self.get_audio(output)
