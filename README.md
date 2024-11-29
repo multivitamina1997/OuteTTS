@@ -88,7 +88,6 @@ interface = outetts.InterfaceGGUF(model_version="0.2", cfg=model_config)
 model_config = outetts.EXL2ModelConfig_v1(
     model_path="local/path/to/model",
     language="en", # Supported languages in v0.2: en, zh, ja, ko
-    max_length=4096,
 )
 
 # Initialize the EXL2 interface
