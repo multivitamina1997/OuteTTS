@@ -71,7 +71,7 @@ class GGUFModelConfig(HFModelConfig):
 
 @dataclass
 class EXL2ModelConfig(HFModelConfig):
-    max_length: int = 4096
+    pass
 
 @dataclass
 class ModelOutput:
@@ -292,7 +292,7 @@ class InterfaceGGUF(InterfaceHF):
             logger.info("Generating audio...")
         
         if max_length != None:
-            raise ValueError("max_length must be set in the model config during model creation for GGUF and EXL2 models.")
+            raise ValueError("max_length must be set in the model config during model creation for GGUF models.")
         
         output = self.model.generate(
             input_ids=input_ids,
@@ -328,7 +328,6 @@ class InterfaceEXL2(InterfaceHF):
         self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
         self.model = EXL2Model(
             model_path=config.model_path,
-            max_length=config.max_length,
             additional_model_config=config.additional_model_config
         )
 
@@ -342,7 +341,7 @@ class InterfaceEXL2(InterfaceHF):
             speaker: dict = None, 
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1,
-            max_length = None,
+            max_length = 4096,
             additional_gen_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
@@ -350,14 +349,12 @@ class InterfaceEXL2(InterfaceHF):
             logger.info(f"Input tokens: {len(input_ids)}")
             logger.info("Generating audio...")
         
-        if max_length != None:
-            raise ValueError("max_length must be set in the model config during model creation for GGUF and EXL2 models.")
-        
         output = self.model.generate(
             input_ids=input_ids,
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
+                max_length=max_length,
                 additional_gen_config=additional_gen_config,
             )
         )
