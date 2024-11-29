@@ -117,11 +117,10 @@ class EXL2Model:
         generator = ExLlamaV2DynamicGenerator(
             model = self.model,
             cache = self.cache,
-            max_length: int = 4096,
             tokenizer = self.tokenizer,
             gen_settings = ExLlamaV2Sampler.Settings(token_repetition_penalty=config.repetition_penalty, temperature=config.temperature, **config.additional_gen_config)
         )
-        job = ExLlamaV2DynamicJob(input_ids=torch.tensor([input_ids]), max_new_tokens=max_length)
+        job = ExLlamaV2DynamicJob(input_ids=torch.tensor([input_ids]), max_new_tokens=config.max_length)
         generator.enqueue(job)
         eos = False
         tokens = []
