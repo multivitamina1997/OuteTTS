@@ -5,18 +5,16 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 try:
     from llama_cpp import Llama, llama_token_is_eog
-except ImportError:
-    _GGUF_AVAILABLE = False
-else:
     _GGUF_AVAILABLE = True
+except:
+    _GGUF_AVAILABLE = False
 
 try:
     from exllamav2 import ExLlamaV2, ExLlamaV2Config, ExLlamaV2Cache, ExLlamaV2Tokenizer
     from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2DynamicJob, ExLlamaV2Sampler
-except ImportError:
-    _EXL2_AVAILABLE = False
-else:
     _EXL2_AVAILABLE = True
+except:
+    _EXL2_AVAILABLE = False
 
 @dataclass
 class GenerationConfig:
@@ -97,41 +95,45 @@ class EXL2Model:
     def __init__(
             self,
             model_path: str,
-            additional_model_config: dict = {}
+            max_length: int,
+            additional_model_config: dict = {},
     ) -> None:
         
         if not _EXL2_AVAILABLE:
             raise ImportError(
                 "exllamav2 python module not found."
-                "To use the GGUF model you must install exllamav2 manually."
+                "To use the EXL2 model you must install exllamav2 manually."
             )
         config = ExLlamaV2Config(model_path)
         config.arch_compat_overrides()
         self.model = ExLlamaV2(config)
-        # Room for improvement: Cache is hardcoded to qwen-2.5-0.5B max seq len
-        self.cache = ExLlamaV2Cache(self.model, max_seq_len=32768, lazy=True)
+        self.cache = ExLlamaV2Cache(self.model, max_seq_len=max_length*2, lazy=True)
         self.model.load_autosplit(self.cache, progress=True)
         self.tokenizer = ExLlamaV2Tokenizer(config)
     
-    def generate(self, input_ids: list[int], config: GenerationConfig) -> list[int]:
+    def generate(self, input_ids: str, config: GenerationConfig, additional_dynamic_generator_config: dict) -> list[int]:
         generator = ExLlamaV2DynamicGenerator(
             model = self.model,
             cache = self.cache,
             tokenizer = self.tokenizer,
-            gen_settings = ExLlamaV2Sampler.Settings(token_repetition_penalty=config.repetition_penalty, temperature=config.temperature, **config.additional_gen_config)
+            **additional_dynamic_generator_config
         )
-        job = ExLlamaV2DynamicJob(input_ids=torch.tensor([input_ids]), max_new_tokens=config.max_length)
-        generator.enqueue(job)
-        eos = False
-        tokens = []
-        while not eos:
-            results = generator.iterate()
-            # Only batches one at a time. Has room for improvement.
-            for result in results:
-                assert result["job"] == job
-                if result["stage"] == "streaming":
-                    tokens.append(int(result.get("token_ids", "")[0][0]))
-                    if tokens[-1] == self.tokenizer.eos_token_id:
-                        eos = True
-        #print(tokens)
-        return tokens
+
+        input_size = self.tokenizer.encode(input_ids).size()[-1]
+
+        output = generator.generate(
+            prompt = input_ids,
+            max_new_tokens = config.max_length,
+            add_bos = False,
+            decode_special_tokens=True,
+            gen_settings = ExLlamaV2Sampler.Settings(
+                token_repetition_penalty=config.repetition_penalty, 
+                temperature=config.temperature, 
+                **config.additional_gen_config
+            ),
+            stop_conditions=[self.tokenizer.eos_token_id]
+        )
+
+        return self.tokenizer.encode(output).flatten().tolist()[input_size:]
+   
+   

@@ -54,7 +54,7 @@ _DEFAULT_SPEAKERS = {
 
 @dataclass
 class HFModelConfig:
-    model_path: str = "OuteAI/OuteTTS-0.1-350M"
+    model_path: str = "OuteAI/OuteTTS-0.2-500M"
     language: str = "en"
     tokenizer_path: str = None
     languages: list = field(default_factory=list)
@@ -63,11 +63,11 @@ class HFModelConfig:
     dtype: torch.dtype = None
     additional_model_config: dict = field(default_factory=dict)
     wavtokenizer_model_path: str = None
+    max_length: int = 4096
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
-    n_gpu_layers: int = 0,
-    max_length: int = 4096,
+    n_gpu_layers: int = 0
 
 @dataclass
 class EXL2ModelConfig(HFModelConfig):
@@ -111,6 +111,7 @@ class InterfaceHF:
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
+        self.config = config
         self._device = config.device
         self.languages = config.languages
         self.language = config.language
@@ -220,6 +221,12 @@ class InterfaceHF:
             raise ValueError(f"Language {language} is not supported by the current model")
         self.language = language
 
+    def check_generation_max_length(self, max_length):
+        if max_length is None:
+            raise ValueError("max_length must be specified.")
+        if max_length > self.config.max_length:
+            raise ValueError(f"Requested max_length ({max_length}) exceeds the maximum supported length ({self.config.max_length}).")
+
     def generate(
             self, 
             text: str, 
@@ -233,6 +240,8 @@ class InterfaceHF:
         if self.verbose:
             logger.info(f"Input tokens: {input_ids.size()[-1]}")
             logger.info("Generating audio...")
+
+        self.check_generation_max_length(max_length)
 
         output = self.model.generate(
             input_ids=input_ids,
@@ -259,6 +268,7 @@ class InterfaceGGUF(InterfaceHF):
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
+        self.config = config
         self._device = config.device
         self.languages = config.languages
         self.language = config.language
@@ -283,7 +293,7 @@ class InterfaceGGUF(InterfaceHF):
             speaker: dict = None, 
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1,
-            max_length = None,
+            max_length = 4096,
             additional_gen_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
@@ -291,14 +301,13 @@ class InterfaceGGUF(InterfaceHF):
             logger.info(f"Input tokens: {len(input_ids)}")
             logger.info("Generating audio...")
         
-        if max_length != None:
-            raise ValueError("max_length must be set in the model config during model creation for GGUF models.")
+        self.check_generation_max_length(max_length)
         
         output = self.model.generate(
             input_ids=input_ids,
             config=GenerationConfig(
                 temperature=temperature,
-                max_length=config.max_length,
+                max_length=max_length,
                 repetition_penalty=repetition_penalty,
                 additional_gen_config=additional_gen_config,
             )
@@ -319,6 +328,7 @@ class InterfaceEXL2(InterfaceHF):
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
+        self.config = config
         self._device = config.device
         self.languages = config.languages
         self.language = config.language
@@ -328,12 +338,12 @@ class InterfaceEXL2(InterfaceHF):
         self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
         self.model = EXL2Model(
             model_path=config.model_path,
-            additional_model_config=config.additional_model_config
+            max_length=config.max_length,
+            additional_model_config=config.additional_model_config,
         )
 
     def prepare_prompt(self, text: str, speaker: dict = None):
-        prompt = self.prompt_processor.get_completion_prompt(text, self.language, speaker)
-        return self.prompt_processor.tokenizer.encode(prompt, add_special_tokens=False)
+        return self.prompt_processor.get_completion_prompt(text, self.language, speaker)
 
     def generate(
             self, 
@@ -343,11 +353,14 @@ class InterfaceEXL2(InterfaceHF):
             repetition_penalty: float = 1.1,
             max_length = 4096,
             additional_gen_config = {},
+            additional_dynamic_generator_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
             logger.info(f"Input tokens: {len(input_ids)}")
             logger.info("Generating audio...")
+
+        self.check_generation_max_length(max_length)
         
         output = self.model.generate(
             input_ids=input_ids,
@@ -356,7 +369,8 @@ class InterfaceEXL2(InterfaceHF):
                 repetition_penalty=repetition_penalty,
                 max_length=max_length,
                 additional_gen_config=additional_gen_config,
-            )
+            ),
+            additional_dynamic_generator_config=additional_dynamic_generator_config
         )
         audio = self.get_audio(output)
         if self.verbose:
