@@ -224,8 +224,8 @@ class InterfaceHF:
     def check_generation_max_length(self, max_length):
         if max_length is None:
             raise ValueError("max_length must be specified.")
-        if max_length > self.config.max_length:
-            raise ValueError(f"Requested max_length ({max_length}) exceeds the maximum supported length ({self.config.max_length}).")
+        if max_length > self.config.cache_size:
+            raise ValueError(f"Requested max_length ({max_length}) exceeds the current allocation ({self.config.max_length}).")
 
     def generate(
             self, 
