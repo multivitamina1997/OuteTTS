@@ -75,7 +75,6 @@ model_config = outetts.GGUFModelConfig_v1(
     model_path="local/path/to/model.gguf",
     language="en", # Supported languages in v0.2: en, zh, ja, ko
     n_gpu_layers=0,
-    max_length=4096,
 )
 
 # Initialize the GGUF interface
