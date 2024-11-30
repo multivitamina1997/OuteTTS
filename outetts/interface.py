@@ -50,11 +50,11 @@ def get_model_config(version: str):
         raise ValueError(f"Unsupported model version '{version}'. Supported versions are: {list(MODEL_CONFIGS.keys())}")
     return MODEL_CONFIGS[version]
 
-def check_max_length(max_lenght: int, model_max_length: int):
-    if max_lenght is None:
+def check_max_length(max_length: int, model_max_length: int):
+    if max_length is None:
         raise ValueError("max_length must be specified.")
-    if max_lenght > model_max_length:
-        raise ValueError(f"Requested max_length ({max_lenght}) exceeds the maximum supported length ({model_max_length}).")
+    if max_length > model_max_length:
+        raise ValueError(f"Requested max_length ({max_length}) exceeds the maximum supported length ({model_max_length}).")
 
 def InterfaceHF(
         model_version: str,
