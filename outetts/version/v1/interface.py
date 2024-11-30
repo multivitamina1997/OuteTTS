@@ -5,7 +5,6 @@ import torch
 from .alignment import CTCForcedAlignment
 import torchaudio
 from dataclasses import dataclass, field
-import pickle
 from loguru import logger
 import os
 import json
@@ -63,16 +62,15 @@ class HFModelConfig:
     dtype: torch.dtype = None
     additional_model_config: dict = field(default_factory=dict)
     wavtokenizer_model_path: str = None
-    cache_size: int = 4096
+    max_seq_length: int = 4096
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
     n_gpu_layers: int = 0
-    cache_size: int = 4096
 
 @dataclass
 class EXL2ModelConfig(HFModelConfig):
-    cache_size: int = None
+    pass
 
 @dataclass
 class ModelOutput:
@@ -225,8 +223,8 @@ class InterfaceHF:
     def check_generation_max_length(self, max_length):
         if max_length is None:
             raise ValueError("max_length must be specified.")
-        if self.config.cache_size and max_length > self.config.cache_size:
-            raise ValueError(f"Requested max_length ({max_length}) exceeds the current allocation ({self.config.max_length}).")
+        if max_length > self.config.max_seq_length:
+            raise ValueError(f"Requested max_length ({max_length}) exceeds the current max_seq_length ({self.config.max_seq_length}).")
 
     def generate(
             self, 
@@ -280,7 +278,7 @@ class InterfaceGGUF(InterfaceHF):
         self.model = GGUFModel(
             model_path=config.model_path,
             n_gpu_layers=config.n_gpu_layers,
-            cache_size=config.cache_size,
+            max_seq_length=config.max_seq_length,
             additional_model_config=config.additional_model_config
         )
 
@@ -339,7 +337,7 @@ class InterfaceEXL2(InterfaceHF):
         self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
         self.model = EXL2Model(
             model_path=config.model_path,
-            cache_size=config.cache_size,
+            max_seq_length=config.max_seq_length,
             additional_model_config=config.additional_model_config,
         )
 
