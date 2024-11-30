@@ -59,7 +59,7 @@ class GGUFModel:
             self,
             model_path: str,
             n_gpu_layers: int = 0,
-            max_length: int = 4096,
+            cache_size: int = 4096,
             additional_model_config: dict = {}
     ) -> None:
         
@@ -69,7 +69,7 @@ class GGUFModel:
                 "To use the GGUF model you must install llama cpp python manually."
             )
 
-        additional_model_config["n_ctx"] = max_length
+        additional_model_config["n_ctx"] = cache_size
         self.model = Llama(
             model_path=model_path,
             n_gpu_layers=n_gpu_layers,
@@ -95,7 +95,7 @@ class EXL2Model:
     def __init__(
             self,
             model_path: str,
-            max_length: int,
+            cache_size: int,
             additional_model_config: dict = {},
     ) -> None:
         
@@ -107,7 +107,7 @@ class EXL2Model:
         config = ExLlamaV2Config(model_path)
         config.arch_compat_overrides()
         self.model = ExLlamaV2(config)
-        self.cache = ExLlamaV2Cache(self.model, max_seq_len=config.max_seq_len, lazy=True)
+        self.cache = ExLlamaV2Cache(self.model, max_seq_len=cache_size or config.max_seq_len, lazy=True)
         self.model.load_autosplit(self.cache, progress=True)
         self.tokenizer = ExLlamaV2Tokenizer(config)
     
