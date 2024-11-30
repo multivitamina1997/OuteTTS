@@ -107,7 +107,7 @@ class EXL2Model:
         config = ExLlamaV2Config(model_path)
         config.arch_compat_overrides()
         self.model = ExLlamaV2(config)
-        self.cache = ExLlamaV2Cache(self.model, max_seq_len=max_length*2, lazy=True)
+        self.cache = ExLlamaV2Cache(self.model, max_seq_len=config.max_seq_len, lazy=True)
         self.model.load_autosplit(self.cache, progress=True)
         self.tokenizer = ExLlamaV2Tokenizer(config)
     
