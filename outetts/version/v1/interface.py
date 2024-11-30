@@ -63,15 +63,16 @@ class HFModelConfig:
     dtype: torch.dtype = None
     additional_model_config: dict = field(default_factory=dict)
     wavtokenizer_model_path: str = None
-    max_length: int = 4096
+    cache_size: int = 4096
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
     n_gpu_layers: int = 0
+    cache_size: int = 4096
 
 @dataclass
 class EXL2ModelConfig(HFModelConfig):
-    pass
+    cache_size: int = None
 
 @dataclass
 class ModelOutput:
@@ -279,7 +280,7 @@ class InterfaceGGUF(InterfaceHF):
         self.model = GGUFModel(
             model_path=config.model_path,
             n_gpu_layers=config.n_gpu_layers,
-            max_length=config.max_length,
+            cache_size=config.cache_size,
             additional_model_config=config.additional_model_config
         )
 
@@ -338,7 +339,7 @@ class InterfaceEXL2(InterfaceHF):
         self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
         self.model = EXL2Model(
             model_path=config.model_path,
-            max_length=config.max_length,
+            cache_size=config.cache_size,
             additional_model_config=config.additional_model_config,
         )
 
