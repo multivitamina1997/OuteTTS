@@ -6,14 +6,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 try:
     from llama_cpp import Llama, llama_token_is_eog
     _GGUF_AVAILABLE = True
-except:
+except ImportError:
     _GGUF_AVAILABLE = False
 
 try:
     from exllamav2 import ExLlamaV2, ExLlamaV2Config, ExLlamaV2Cache, ExLlamaV2Tokenizer
     from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2DynamicJob, ExLlamaV2Sampler
     _EXL2_AVAILABLE = True
-except:
+except ImportError:
     _EXL2_AVAILABLE = False
 
 @dataclass
