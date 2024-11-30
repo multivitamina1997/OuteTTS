@@ -84,7 +84,7 @@ def InterfaceHF(
 
     interface_class = config["hf_interface"]
 
-    check_max_length(cfg.max_length, config["max_length"])
+    #check_max_length(cfg.cache_size, config["max_length"])
 
     return interface_class(cfg)
 
@@ -117,7 +117,7 @@ def InterfaceGGUF(
         raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
     cfg.languages = languages
 
-    check_max_length(cfg.max_length, config["max_length"])
+    #check_max_length(cfg.cache_size, config["max_length"])
 
     interface_class = config["gguf_interface"]
     return interface_class(cfg)
@@ -148,7 +148,7 @@ def InterfaceEXL2(
         raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
     cfg.languages = languages
 
-    check_max_length(cfg.max_length, config["max_length"])
+    #check_max_length(cfg.cache_size, config["max_length"])
 
     interface_class = config["exl2_interface"]
     return interface_class(cfg)
