@@ -63,6 +63,7 @@ class HFModelConfig:
     dtype: torch.dtype = None
     additional_model_config: dict = field(default_factory=dict)
     wavtokenizer_model_path: str = None
+    cache_size: int = 4096
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
