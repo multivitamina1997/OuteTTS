@@ -1,11 +1,10 @@
 from ...wav_tokenizer.audio_codec import AudioCodec
 from .prompt_processor import PromptProcessor
-from .model import HFModel, GGUFModel, GenerationConfig
+from .model import HFModel, GGUFModel, EXL2Model, GenerationConfig
 import torch
 from .alignment import CTCForcedAlignment
 import torchaudio
 from dataclasses import dataclass, field
-import pickle
 from loguru import logger
 import os
 import json
@@ -54,7 +53,7 @@ _DEFAULT_SPEAKERS = {
 
 @dataclass
 class HFModelConfig:
-    model_path: str = "OuteAI/OuteTTS-0.1-350M"
+    model_path: str = "OuteAI/OuteTTS-0.2-500M"
     language: str = "en"
     tokenizer_path: str = None
     languages: list = field(default_factory=list)
@@ -63,10 +62,15 @@ class HFModelConfig:
     dtype: torch.dtype = None
     additional_model_config: dict = field(default_factory=dict)
     wavtokenizer_model_path: str = None
+    max_seq_length: int = 4096
 
 @dataclass
 class GGUFModelConfig(HFModelConfig):
     n_gpu_layers: int = 0
+
+@dataclass
+class EXL2ModelConfig(HFModelConfig):
+    pass
 
 @dataclass
 class ModelOutput:
@@ -106,6 +110,7 @@ class InterfaceHF:
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
+        self.config = config
         self._device = config.device
         self.languages = config.languages
         self.language = config.language
@@ -215,25 +220,35 @@ class InterfaceHF:
             raise ValueError(f"Language {language} is not supported by the current model")
         self.language = language
 
+    def check_generation_max_length(self, max_length):
+        if max_length is None:
+            raise ValueError("max_length must be specified.")
+        if max_length > self.config.max_seq_length:
+            raise ValueError(f"Requested max_length ({max_length}) exceeds the current max_seq_length ({self.config.max_seq_length}).")
+
     def generate(
             self, 
             text: str, 
             speaker: dict = None, 
             temperature: float = 0.1, 
             repetition_penalty: float = 1.1, 
-            max_length: int = 4096
+            max_length: int = 4096,
+            additional_gen_config={},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
             logger.info(f"Input tokens: {input_ids.size()[-1]}")
             logger.info("Generating audio...")
 
+        self.check_generation_max_length(max_length)
+
         output = self.model.generate(
             input_ids=input_ids,
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
-                max_length=max_length
+                max_length=max_length,
+                additional_gen_config=additional_gen_config,
             )
         )
         audio = self.get_audio(output[input_ids.size()[-1]:])
@@ -252,6 +267,7 @@ class InterfaceGGUF(InterfaceHF):
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
+        self.config = config
         self._device = config.device
         self.languages = config.languages
         self.language = config.language
@@ -262,6 +278,7 @@ class InterfaceGGUF(InterfaceHF):
         self.model = GGUFModel(
             model_path=config.model_path,
             n_gpu_layers=config.n_gpu_layers,
+            max_seq_length=config.max_seq_length,
             additional_model_config=config.additional_model_config
         )
 
@@ -274,21 +291,85 @@ class InterfaceGGUF(InterfaceHF):
             text: str, 
             speaker: dict = None, 
             temperature: float = 0.1, 
-            repetition_penalty: float = 1.1, 
-            max_length: int = 4096
+            repetition_penalty: float = 1.1,
+            max_length = 4096,
+            additional_gen_config = {},
+        ) -> ModelOutput:
+        input_ids = self.prepare_prompt(text, speaker)
+        if self.verbose:
+            logger.info(f"Input tokens: {len(input_ids)}")
+            logger.info("Generating audio...")
+        
+        self.check_generation_max_length(max_length)
+        
+        output = self.model.generate(
+            input_ids=input_ids,
+            config=GenerationConfig(
+                temperature=temperature,
+                max_length=max_length,
+                repetition_penalty=repetition_penalty,
+                additional_gen_config=additional_gen_config,
+            )
+        )
+        audio = self.get_audio(output)
+        if self.verbose:
+            logger.info("Audio generation completed")
+
+        return ModelOutput(audio, self.audio_codec.sr)
+
+class InterfaceEXL2(InterfaceHF):
+    def __init__(
+        self,
+        config: EXL2ModelConfig
+    ) -> None:
+        self.device = torch.device(
+            config.device if config.device is not None
+            else "cuda" if torch.cuda.is_available()
+            else "cpu"
+        )
+        self.config = config
+        self._device = config.device
+        self.languages = config.languages
+        self.language = config.language
+        self.verbose = config.verbose
+
+        self.audio_codec = AudioCodec(self.device, config.wavtokenizer_model_path)
+        self.prompt_processor = PromptProcessor(config.tokenizer_path, self.languages)
+        self.model = EXL2Model(
+            model_path=config.model_path,
+            max_seq_length=config.max_seq_length,
+            additional_model_config=config.additional_model_config,
+        )
+
+    def prepare_prompt(self, text: str, speaker: dict = None):
+        return self.prompt_processor.get_completion_prompt(text, self.language, speaker)
+
+    def generate(
+            self, 
+            text: str, 
+            speaker: dict = None, 
+            temperature: float = 0.1, 
+            repetition_penalty: float = 1.1,
+            max_length = 4096,
+            additional_gen_config = {},
+            additional_dynamic_generator_config = {},
         ) -> ModelOutput:
         input_ids = self.prepare_prompt(text, speaker)
         if self.verbose:
             logger.info(f"Input tokens: {len(input_ids)}")
             logger.info("Generating audio...")
 
+        self.check_generation_max_length(max_length)
+        
         output = self.model.generate(
             input_ids=input_ids,
             config=GenerationConfig(
                 temperature=temperature,
                 repetition_penalty=repetition_penalty,
-                max_length=max_length
-            )
+                max_length=max_length,
+                additional_gen_config=additional_gen_config,
+            ),
+            additional_dynamic_generator_config=additional_dynamic_generator_config
         )
         audio = self.get_audio(output)
         if self.verbose:

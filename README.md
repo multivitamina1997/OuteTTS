@@ -13,7 +13,9 @@ OuteTTS is an experimental text-to-speech model that uses a pure language modeli
 pip install outetts
 ```
 
-**Important:** For GGUF support, you must manually install `llama-cpp-python` first.
+**Important:**
+For GGUF support, you must manually install `llama-cpp-python` first.
+For EXL2 support, you must manually install `exllamav2` and `flash-attn` first.
 
 Visit https://github.com/abetlen/llama-cpp-python for specific installation instructions
 
@@ -77,6 +79,18 @@ model_config = outetts.GGUFModelConfig_v1(
 
 # Initialize the GGUF interface
 interface = outetts.InterfaceGGUF(model_version="0.2", cfg=model_config)
+```
+
+### Using EXL2 Model
+```python
+# Configure the EXL2 model
+model_config = outetts.EXL2ModelConfig_v1(
+    model_path="local/path/to/model",
+    language="en", # Supported languages in v0.2: en, zh, ja, ko
+)
+
+# Initialize the EXL2 interface
+interface = outetts.InterfaceEXL2(model_version="0.2", cfg=model_config)
 ```
 
 ### Configure the model with bfloat16 and flash attention
