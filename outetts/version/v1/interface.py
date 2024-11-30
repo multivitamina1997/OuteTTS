@@ -1,6 +1,7 @@
 from ...wav_tokenizer.audio_codec import AudioCodec
 from .prompt_processor import PromptProcessor
 from .model import HFModel, GGUFModel, EXL2Model, GenerationConfig
+from ...whisper import transcribe
 import torch
 from .alignment import CTCForcedAlignment
 import torchaudio
@@ -138,7 +139,25 @@ class InterfaceHF:
             torch.tensor([[output]], dtype=torch.int64).to(self.audio_codec.device)
         )
 
-    def create_speaker(self, audio_path: str, transcript: str):
+    def create_speaker(
+            self, 
+            audio_path: str, 
+            transcript: str = None, 
+            whisper_model: str = "turbo",
+            whisper_device = None
+        ):
+
+        if transcript is None:
+            logger.info("Transcription not provided, transcribing audio with whisper.")
+            transcript = transcribe.transcribe_once(
+                audio_path=audio_path,
+                model=whisper_model,
+                device=whisper_device
+            )
+
+        if not transcript:
+            raise ValueError("Transcript text is empty")
+
         ctc = CTCForcedAlignment(self.languages, self._device)
         words = ctc.align(audio_path, transcript, self.language)
         ctc.free()
