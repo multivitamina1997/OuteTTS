@@ -5,7 +5,25 @@
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Demo_Space-pink)](https://huggingface.co/spaces/OuteAI/OuteTTS-0.2-500M-Demo)
 [![PyPI](https://img.shields.io/badge/PyPI-OuteTTS-orange)](https://pypi.org/project/outetts/)
 
+🤗 [Hugging Face](https://huggingface.co/OuteAI) | 💬 [Discord](https://discord.gg/vyBM87kAmf) | ✖️ [X (Twitter)](https://twitter.com/OuteAI) | 🌐 [Website](https://www.outeai.com) | 📰 [Blog](https://www.outeai.com/blog)
+
 OuteTTS is an experimental text-to-speech model that uses a pure language modeling approach to generate speech, without architectural changes to the foundation model itself.
+
+## Compatibility
+
+OuteTTS supports the following backends:
+
+| **Backend**                 | **Repository**                                      |
+|-----------------------------|----------------------------------------------------|
+| Hugging Face Transformers   | [Hugging Face Transformers](https://github.com/huggingface/transformers) |
+| GGUF llama.cpp              | [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp) |
+| ExLlamaV2                   | [ExLlamaV2](https://github.com/turboderp/exllamav2) |
+
+**Note:** The WavTokenizer and CTC model functionality rely on PyTorch.
+
+## Roadmap
+
+Check out [project roadmap](https://github.com/users/edwko/projects/1) to see what's being worked on and upcoming features.
 
 ## Installation
 
@@ -14,94 +32,121 @@ pip install outetts
 ```
 
 **Important:**
-For GGUF support, you must manually install `llama-cpp-python` first.
-For EXL2 support, you must manually install `exllamav2` and `flash-attn` first.
-
-Visit https://github.com/abetlen/llama-cpp-python for specific installation instructions
+- For GGUF support, install `llama-cpp-python` manually. [Installation Guide](https://github.com/abetlen/llama-cpp-python?tab=readme-ov-file#installation)
+- For EXL2 support, install `exllamav2` manually. [Installation Guide](https://github.com/turboderp/exllamav2?tab=readme-ov-file#installation)
 
 ## Usage
 
-### Interface Usage
+### Backend-Specific Configuration
+
+#### Hugging Face Transformers
+
 ```python
 import outetts
 
-# Configure the model
 model_config = outetts.HFModelConfig_v1(
     model_path="OuteAI/OuteTTS-0.2-500M",
-    language="en",  # Supported languages in v0.2: en, zh, ja, ko
+    language="en",  # Supported languages: en, zh, ja, ko
 )
 
-# Initialize the interface
 interface = outetts.InterfaceHF(model_version="0.2", cfg=model_config)
-
-# Optional: Create a speaker profile (use a 10-15 second audio clip)
-# speaker = interface.create_speaker(
-#     audio_path="path/to/audio/file",
-#     transcript="Transcription of the audio file."
-# )
-
-# Optional: Save and load speaker profiles
-# interface.save_speaker(speaker, "speaker.json")
-# speaker = interface.load_speaker("speaker.json")
-
-# Optional: Load speaker from default presets
-interface.print_default_speakers()
-speaker = interface.load_default_speaker(name="male_1")
-
-output = interface.generate(
-    text="Speech synthesis is the artificial production of human speech. A computer system used for this purpose is called a speech synthesizer, and it can be implemented in software or hardware products.",
-    # Lower temperature values may result in a more stable tone,
-    # while higher values can introduce varied and expressive speech
-    temperature=0.1,
-    repetition_penalty=1.1,
-    max_length=4096,
-
-    # Optional: Use a speaker profile for consistent voice characteristics
-    # Without a speaker profile, the model will generate a voice with random characteristics
-    speaker=speaker,
-)
-
-# Save the synthesized speech to a file
-output.save("output.wav")
-
-# Optional: Play the synthesized speech
-# output.play()
 ```
 
-### Using GGUF Model
+#### GGUF (llama-cpp-python)
+
 ```python
-# Configure the GGUF model
+import outetts
+
 model_config = outetts.GGUFModelConfig_v1(
     model_path="local/path/to/model.gguf",
-    language="en", # Supported languages in v0.2: en, zh, ja, ko
+    language="en", # Supported languages: en, zh, ja, ko
     n_gpu_layers=0,
 )
 
-# Initialize the GGUF interface
 interface = outetts.InterfaceGGUF(model_version="0.2", cfg=model_config)
 ```
 
-### Using EXL2 Model
-```python
-# Configure the EXL2 model
-model_config = outetts.EXL2ModelConfig_v1(
-    model_path="local/path/to/model",
-    language="en", # Supported languages in v0.2: en, zh, ja, ko
-)
-
-# Initialize the EXL2 interface
-interface = outetts.InterfaceEXL2(model_version="0.2", cfg=model_config)
-```
-
-### Configure the model with bfloat16 and flash attention
+#### ExLlamaV2
 
 ```python
 import outetts
-import torch
 
+model_config = outetts.EXL2ModelConfig_v1(
+    model_path="local/path/to/model",
+    language="en", # Supported languages: en, zh, ja, ko
+)
+
+interface = outetts.InterfaceEXL2(model_version="0.2", cfg=model_config)
+```
+
+### Speaker Creation and Management
+
+#### Creating a Speaker
+
+You can create a speaker profile for voice cloning, which is compatible across all backends.
+
+```python
+speaker = interface.create_speaker(
+    audio_path="path/to/audio/file.wav",
+
+    # If transcript is not provided, it will be automatically transcribed using Whisper
+    transcript=None,            # Set to None to use Whisper for transcription
+
+    whisper_model="turbo",      # Optional: specify Whisper model (default: "turbo")
+    whisper_device=None,        # Optional: specify device for Whisper (default: None)
+)
+```
+#### Saving and Loading Speaker Profiles
+
+Speaker profiles can be saved and loaded across all supported backends.
+
+```python
+# Save speaker profile
+interface.save_speaker(speaker, "speaker.json")
+
+# Load speaker profile
+speaker = interface.load_speaker("speaker.json")
+```
+
+#### Default Speaker Initialization
+
+OuteTTS includes a set of default speaker profiles. Use them directly:
+
+```python
+# Print available default speakers
+interface.print_default_speakers()
+# Load a default speaker
+speaker = interface.load_default_speaker(name="male_1")
+```
+
+### Text-to-Speech Generation
+
+The generation process is consistent across all backends.
+
+```python
+output = interface.generate(
+    text="Speech synthesis is the artificial production of human speech.",
+    temperature=0.1,
+    repetition_penalty=1.1,
+    max_length=4096,
+    speaker=speaker, # Optional: speaker profile
+)
+
+output.save("output.wav")
+# Optional: Play the audio
+# output.play()
+```
+
+### Custom Backend Configuration
+
+You can initialize custom backend configurations for specific needs.
+
+#### Example with Flash Attention for Hugging Face Transformers
+
+```python
 model_config = outetts.HFModelConfig_v1(
     model_path="OuteAI/OuteTTS-0.2-500M",
-    language="en",  # Supported languages in v0.2: en, zh, ja, ko
+    language="en",
     dtype=torch.bfloat16,
     additional_model_config={
         'attn_implementation': "flash_attention_2"
@@ -109,7 +154,43 @@ model_config = outetts.HFModelConfig_v1(
 )
 ```
 
-### Creating a Speaker for Voice Cloning
+### Full Usage Example
+
+```python
+import outetts
+
+# Configure the model
+model_config = outetts.HFModelConfig_v1(
+    model_path="OuteAI/OuteTTS-0.2-500M",
+    language="en",  # Supported languages: en, zh, ja, ko
+)
+
+# Initialize the interface
+interface = outetts.InterfaceHF(model_version="0.2", cfg=model_config)
+
+# Print available default speakers
+interface.print_default_speakers()
+
+# Load a default speaker
+speaker = interface.load_default_speaker(name="male_1")
+
+# Generate speech
+output = interface.generate(
+    text="Speech synthesis is the artificial production of human speech.",
+    temperature=0.1,
+    repetition_penalty=1.1,
+    max_length=4096,
+    speaker=speaker,  # Optional: Speaker profile
+)
+
+# Save the generated speech to a file
+output.save("output.wav")
+
+# Optional: Play the generated audio
+# output.play()
+```
+
+### Speaker Profile Recommendations
 
 To achieve the best results when creating a speaker profile, consider the following recommendations:
 
@@ -129,11 +210,6 @@ To achieve the best results when creating a speaker profile, consider the follow
 
 5. **Parameter Adjustments:**
    - Adjust parameters like `temperature` in the `generate` function to refine the expressive quality and consistency of the synthesized voice.
-
-## Blogs
-https://www.outeai.com/blog/outetts-0.2-500m
-
-https://www.outeai.com/blog/outetts-0.1-350m
 
 ## Credits
 
