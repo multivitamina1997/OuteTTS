@@ -63,7 +63,10 @@ output = interface.generate(
     temperature=0.1,
     repetition_penalty=1.1,
     max_length=4096,
-    speaker=speaker,  # Optional: Speaker profile
+
+    # Optional: Use a speaker profile for consistent voice characteristics
+    # Without a speaker profile, the model will generate a voice with random characteristics
+    speaker=speaker,
 )
 
 # Save the generated speech to a file
