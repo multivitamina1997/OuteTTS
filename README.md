@@ -37,6 +37,42 @@ pip install outetts
 
 ## Usage
 
+### Quick Start: Basic Full Example
+
+```python
+import outetts
+
+# Configure the model
+model_config = outetts.HFModelConfig_v1(
+    model_path="OuteAI/OuteTTS-0.2-500M",
+    language="en",  # Supported languages: en, zh, ja, ko
+)
+
+# Initialize the interface
+interface = outetts.InterfaceHF(model_version="0.2", cfg=model_config)
+
+# Print available default speakers
+interface.print_default_speakers()
+
+# Load a default speaker
+speaker = interface.load_default_speaker(name="male_1")
+
+# Generate speech
+output = interface.generate(
+    text="Speech synthesis is the artificial production of human speech.",
+    temperature=0.1,
+    repetition_penalty=1.1,
+    max_length=4096,
+    speaker=speaker,  # Optional: Speaker profile
+)
+
+# Save the generated speech to a file
+output.save("output.wav")
+
+# Optional: Play the generated audio
+# output.play()
+```
+
 ### Backend-Specific Configuration
 
 #### Hugging Face Transformers
@@ -152,42 +188,6 @@ model_config = outetts.HFModelConfig_v1(
         'attn_implementation': "flash_attention_2"
     }
 )
-```
-
-### Full Usage Example
-
-```python
-import outetts
-
-# Configure the model
-model_config = outetts.HFModelConfig_v1(
-    model_path="OuteAI/OuteTTS-0.2-500M",
-    language="en",  # Supported languages: en, zh, ja, ko
-)
-
-# Initialize the interface
-interface = outetts.InterfaceHF(model_version="0.2", cfg=model_config)
-
-# Print available default speakers
-interface.print_default_speakers()
-
-# Load a default speaker
-speaker = interface.load_default_speaker(name="male_1")
-
-# Generate speech
-output = interface.generate(
-    text="Speech synthesis is the artificial production of human speech.",
-    temperature=0.1,
-    repetition_penalty=1.1,
-    max_length=4096,
-    speaker=speaker,  # Optional: Speaker profile
-)
-
-# Save the generated speech to a file
-output.save("output.wav")
-
-# Optional: Play the generated audio
-# output.play()
 ```
 
 ### Speaker Profile Recommendations
