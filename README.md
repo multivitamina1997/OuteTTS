@@ -46,7 +46,7 @@ import outetts
 
 model_config = outetts.HFModelConfig_v1(
     model_path="OuteAI/OuteTTS-0.2-500M",
-    language="en",  # Supported languages: en, zh, ja, ko
+    language="en",  # Supported languages in v0.2: en, zh, ja, ko
 )
 
 interface = outetts.InterfaceHF(model_version="0.2", cfg=model_config)
@@ -59,7 +59,7 @@ import outetts
 
 model_config = outetts.GGUFModelConfig_v1(
     model_path="local/path/to/model.gguf",
-    language="en", # Supported languages: en, zh, ja, ko
+    language="en", # Supported languages in v0.2: en, zh, ja, ko
     n_gpu_layers=0,
 )
 
@@ -73,7 +73,7 @@ import outetts
 
 model_config = outetts.EXL2ModelConfig_v1(
     model_path="local/path/to/model",
-    language="en", # Supported languages: en, zh, ja, ko
+    language="en", # Supported languages in v0.2: en, zh, ja, ko
 )
 
 interface = outetts.InterfaceEXL2(model_version="0.2", cfg=model_config)
