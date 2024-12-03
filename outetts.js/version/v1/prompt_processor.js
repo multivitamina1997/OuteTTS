@@ -102,7 +102,6 @@ export class PromptProcessor {
             const x = this.map_audio_tokens.get(token);
             if (x) result.push(x);
         }
-        console.log({ result });
         return result;
     }
 }
