@@ -110,10 +110,9 @@ function number_to_words_helper(number) {
 /**
  * Recursive function to convert a number into words.
  * @param {number} number
- * @param {string[]} [words=[]]
  * @returns {string}
  */
-function to_words(number, words = []) {
+function to_words(number) {
     let remainder, word;
 
     if (number < 20) {
@@ -152,6 +151,5 @@ function to_words(number, words = []) {
         word += ", " + to_words(remainder);
     }
 
-    words.push(word);
-    return words.join(" ");
+    return word;
 }
