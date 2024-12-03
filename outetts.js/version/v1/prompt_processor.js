@@ -1,4 +1,4 @@
-import { number_to_words } from './utils/number_to_words';
+import { number_to_words } from './utils/number_to_words.js';
 
 export class PromptProcessor {
     /**
@@ -48,7 +48,7 @@ export class PromptProcessor {
 
         text = text
             .toLowerCase()
-            .replace(/\d+(\.\d+)?/g, match => number_to_words(match))
+            .replace(/\d+(\.\d+)?/g, match => number_to_words(Number(match)))
             .replace(/[-_/,\.\\]/g, " ")
             .replace(/[^a-z\s]/g, "")
             .replace(/\s+/g, " ")
