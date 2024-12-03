@@ -93,6 +93,7 @@ const TEST_CASES = {
         [1001000000001, "one trillion, one billion and one"],
         [1001000000100, "one trillion, one billion, one hundred"],
         [101010, "one hundred and one thousand and ten"],
+        [123456, "one hundred and twenty-three thousand, four hundred and fifty-six"],
         [555123, "five hundred and fifty-five thousand, one hundred and twenty-three"],
     ],
     "Edge cases": [
