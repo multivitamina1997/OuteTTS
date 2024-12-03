@@ -153,8 +153,10 @@ export class InterfaceHF {
 
         const audio_codec = new AudioCodec(
             await PreTrainedModel.from_pretrained("onnx-community/WavTokenizer-large-speech-75token_decode", {
-                device: config.device,
-                dtype: config.dtype,
+                // WebGPU is not currently supported, so we use the default device (WASM/CPU).
+                // See https://github.com/microsoft/onnxruntime/issues/22994 for more information.
+                // device: config.device,
+                // dtype: config.dtype,
             }),
         );
 
