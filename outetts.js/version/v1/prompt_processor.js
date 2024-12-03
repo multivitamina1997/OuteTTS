@@ -43,8 +43,7 @@ export class PromptProcessor {
             throw new Error(`Language ${language} not supported, supported languages are ${this.languages}`);
         }
         if (language !== "en") {
-            // TODO: Implement pre-processing for non-English languages
-            console.warn("Non-English languages are not fully supported yet, so the output may not be accurate.");
+            throw new Error("Non-English languages are not supported yet.");
         }
 
         text = text
