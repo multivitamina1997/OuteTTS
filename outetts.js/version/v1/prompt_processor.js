@@ -1,3 +1,5 @@
+import { number_to_words } from './utils/number_to_words';
+
 export class PromptProcessor {
     /**
      *
@@ -47,7 +49,7 @@ export class PromptProcessor {
 
         text = text
             .toLowerCase()
-            // .replace(/\d+(\.\d+)?/g, match => this.lec.number_to_words(match))
+            .replace(/\d+(\.\d+)?/g, match => number_to_words(match))
             .replace(/[-_/,\.\\]/g, " ")
             .replace(/[^a-z\s]/g, "")
             .replace(/\s+/g, " ")
