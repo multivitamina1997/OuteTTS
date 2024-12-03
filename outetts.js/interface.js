@@ -1,14 +1,15 @@
 import { InterfaceHF as _InterfaceHF_v1, HFModelConfig as HFModelConfig_v1 } from "./version/v1/interface.js";
 
 const MODEL_CONFIGS = Object.freeze({
-    0.1: {
-        tokenizer: "onnx-community/OuteTTS-0.1-350M",
-        sizes: ["350M"],
-        links: ["https://huggingface.co/onnx-community/OuteTTS-0.1-350M"],
-        languages: ["en"],
-        hf_interface: _InterfaceHF_v1,
-        max_seq_length: 4096,
-    },
+    // TODO: Add support for 0.1 model
+    // 0.1: {
+    //     tokenizer: "onnx-community/OuteTTS-0.1-350M",
+    //     sizes: ["350M"],
+    //     links: ["https://huggingface.co/onnx-community/OuteTTS-0.1-350M"],
+    //     languages: ["en"],
+    //     hf_interface: _InterfaceHF_v1,
+    //     max_seq_length: 4096,
+    // },
     0.2: {
         tokenizer: "onnx-community/OuteTTS-0.2-500M",
         sizes: ["500M"],
