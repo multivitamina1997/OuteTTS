@@ -2,21 +2,40 @@ import { describe, expect, test } from "vitest";
 import { number_to_words } from "../outetts.js/version/v1/utils/number_to_words.js";
 
 const TEST_CASES = {
-    "Basic integers": [
+    "Single digits": [
         [0, "zero"],
         [1, "one"],
+        [2, "two"],
+        [3, "three"],
+        [4, "four"],
         [5, "five"],
-        [42, "forty-two"],
+        [6, "six"],
+        [7, "seven"],
+        [8, "eight"],
+        [9, "nine"],
     ],
-    "Large integers": [
-        [1000, "one thousand"],
-        [1234567890, "one billion, two hundred and thirty-four million, five hundred and sixty-seven thousand, eight hundred and ninety"],
-        [9876543210, "nine billion, eight hundred and seventy-six million, five hundred and forty-three thousand, two hundred and ten"],
+    "Two-digit numbers": [
+        [10, "ten"],
+        [11, "eleven"],
+        [12, "twelve"],
+        [13, "thirteen"],
+        [15, "fifteen"],
+        [19, "nineteen"],
+        [20, "twenty"],
+        [21, "twenty-one"],
+        [42, "forty-two"],
+        [81, "eighty-one"],
+        [99, "ninety-nine"],
     ],
     "Triple-digit numbers": [
         [100, "one hundred"],
         [123, "one hundred and twenty-three"],
         [999, "nine hundred and ninety-nine"],
+    ],
+    "Large integers": [
+        [1000, "one thousand"],
+        [1234567890, "one billion, two hundred and thirty-four million, five hundred and sixty-seven thousand, eight hundred and ninety"],
+        [9876543210, "nine billion, eight hundred and seventy-six million, five hundred and forty-three thousand, two hundred and ten"],
     ],
     Decimals: [
         [1, "one"],
@@ -50,32 +69,6 @@ const TEST_CASES = {
         [-0.5, "minus zero point five"],
         [-999, "minus nine hundred and ninety-nine"],
     ],
-    "Single digits": [
-        [0, "zero"],
-        [1, "one"],
-        [2, "two"],
-        [3, "three"],
-        [4, "four"],
-        [5, "five"],
-        [6, "six"],
-        [7, "seven"],
-        [8, "eight"],
-        [9, "nine"],
-    ],
-    "Two-digit numbers": [
-        [10, "ten"],
-        [11, "eleven"],
-        [19, "nineteen"],
-        [20, "twenty"],
-        [81, "eighty-one"],
-        [99, "ninety-nine"],
-    ],
-    "Special cases for teens": [
-        [13, "thirteen"],
-        [19, "nineteen"],
-        [15, "fifteen"],
-        [18, "eighteen"],
-    ],
     "Round numbers": [
         [10000, "ten thousand"],
         [1000000, "one million"],
@@ -103,7 +96,6 @@ const TEST_CASES = {
         [555123, "five hundred and fifty-five thousand, one hundred and twenty-three"],
     ],
     "Edge cases": [
-        [0, "zero"],
         [-0, "minus zero"],
         [999999999999, "nine hundred and ninety-nine billion, nine hundred and ninety-nine million, nine hundred and ninety-nine thousand, nine hundred and ninety-nine"],
         [Number.MAX_SAFE_INTEGER, "nine quadrillion, seven trillion, one hundred and ninety-nine billion, two hundred and fifty-four million, seven hundred and forty thousand, nine hundred and ninety-one"],
