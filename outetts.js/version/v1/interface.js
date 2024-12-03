@@ -1,4 +1,3 @@
-
 import { AutoModelForCausalLM, AutoTokenizer, PreTrainedModel } from "@huggingface/transformers";
 
 import _DEFAULT_SPEAKERS from "./default_speakers.js";
@@ -17,7 +16,7 @@ export class HFModelConfig {
         dtype = null,
         additional_model_config = {},
         wavtokenizer_model_path = null,
-        max_seq_length = 4096
+        max_seq_length = 4096,
     } = {}) {
         this.model_path = model_path;
         this.language = language;
@@ -56,51 +55,51 @@ export class ModelOutput {
 
         const writeString = (view, offset, string) => {
             for (let i = 0; i < string.length; ++i) {
-                view.setUint8(offset + i, string.charCodeAt(i))
+                view.setUint8(offset + i, string.charCodeAt(i));
             }
-        }
+        };
 
         /* RIFF identifier */
-        writeString(view, 0, 'RIFF')
+        writeString(view, 0, "RIFF");
         /* RIFF chunk length */
-        view.setUint32(4, 36 + samples.length * 4, true)
+        view.setUint32(4, 36 + samples.length * 4, true);
         /* RIFF type */
-        writeString(view, 8, 'WAVE')
+        writeString(view, 8, "WAVE");
         /* format chunk identifier */
-        writeString(view, 12, 'fmt ')
+        writeString(view, 12, "fmt ");
         /* format chunk length */
-        view.setUint32(16, 16, true)
+        view.setUint32(16, 16, true);
         /* sample format (raw) */
-        view.setUint16(20, 3, true)
+        view.setUint16(20, 3, true);
         /* channel count */
-        view.setUint16(22, 1, true)
+        view.setUint16(22, 1, true);
         /* sample rate */
-        view.setUint32(24, sr, true)
+        view.setUint32(24, sr, true);
         /* byte rate (sample rate * block align) */
-        view.setUint32(28, sr * 4, true)
+        view.setUint32(28, sr * 4, true);
         /* block align (channel count * bytes per sample) */
-        view.setUint16(32, 4, true)
+        view.setUint16(32, 4, true);
         /* bits per sample */
-        view.setUint16(34, 32, true)
+        view.setUint16(34, 32, true);
         /* data chunk identifier */
-        writeString(view, 36, 'data')
+        writeString(view, 36, "data");
         /* data chunk length */
-        view.setUint32(40, samples.length * 4, true)
+        view.setUint32(40, samples.length * 4, true);
 
         for (let i = 0; i < samples.length; ++i, offset += 4) {
-            view.setFloat32(offset, samples[i], true)
+            view.setFloat32(offset, samples[i], true);
         }
 
-        return buffer
+        return buffer;
     }
 
     async save(path) {
         const wave = this.to_wav();
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
             // Create blob
-            const blob = new Blob([this.to_wav()], { type: 'audio/wav' });
+            const blob = new Blob([this.to_wav()], { type: "audio/wav" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
             a.download = path;
             a.click();
@@ -109,16 +108,15 @@ export class ModelOutput {
             URL.revokeObjectURL(url);
         } else {
             // Dynamically import fs
-            const fs = await import('fs');
+            const fs = await import("fs");
             fs.writeFileSync(path, Buffer.from(wave));
         }
     }
 }
 
-
 export class InterfaceHF {
     /**
-     * 
+     *
      */
     constructor({ config, audio_codec, prompt_processor, model }) {
         this.language = config.language;
@@ -141,25 +139,23 @@ export class InterfaceHF {
      * @param {HFModelConfig} config
      */
     static async load(config) {
-
         const prompt_processor = new PromptProcessor(
             await AutoTokenizer.from_pretrained(config.tokenizer_path ?? config.model_path),
             config.languages,
         );
 
-
         const model = new HFModel(
             await AutoModelForCausalLM.from_pretrained(config.model_path, {
                 device: config.device,
                 dtype: config.dtype,
-            })
-        )
+            }),
+        );
 
         const audio_codec = new AudioCodec(
             await PreTrainedModel.from_pretrained("onnx-community/WavTokenizer-large-speech-75token_decode", {
                 device: config.device,
                 dtype: config.dtype,
-            })
+            }),
         );
 
         return new InterfaceHF({
@@ -169,7 +165,6 @@ export class InterfaceHF {
             model,
         });
     }
-
 
     /**
      * Extract audio from the output tokens.
@@ -186,11 +181,10 @@ export class InterfaceHF {
         return this.audio_codec.decode(output);
     }
 
-
     print_default_speakers() {
         const total_speakers = Object.values(_DEFAULT_SPEAKERS).reduce(
             (total, speakers) => total + Object.keys(speakers).length,
-            0
+            0,
         );
         console.log("\n=== ALL AVAILABLE SPEAKERS ===");
         console.log(`Total: ${total_speakers} speakers across ${Object.keys(_DEFAULT_SPEAKERS).length} languages`);
@@ -206,7 +200,6 @@ export class InterfaceHF {
         console.log("\nTo use a speaker: load_default_speaker(name)\n");
     }
 
-
     load_default_speaker(name) {
         const language = this.language.toLowerCase().trim();
         if (!(_DEFAULT_SPEAKERS[language] && _DEFAULT_SPEAKERS[language][name])) {
@@ -216,15 +209,17 @@ export class InterfaceHF {
     }
 
     /**
-     * 
-     * @param {*} text 
-     * @param {*} speaker 
+     *
+     * @param {*} text
+     * @param {*} speaker
      * @returns {Object}
      */
     prepare_prompt(text, speaker = null) {
         const prompt = this.prompt_processor.get_completion_prompt(text, this.language, speaker);
 
-        return this.prompt_processor.tokenizer(prompt, { add_special_tokens: false });
+        return this.prompt_processor.tokenizer(prompt, {
+            add_special_tokens: false,
+        });
     }
 
     /**
@@ -244,7 +239,7 @@ export class InterfaceHF {
         temperature = 0.1,
         repetition_penalty = 1.1,
         max_length = 4096,
-        additional_gen_config = {}
+        additional_gen_config = {},
     }) {
         const inputs = this.prepare_prompt(text, speaker);
 
@@ -273,7 +268,8 @@ export class InterfaceHF {
         }
 
         return new ModelOutput({
-            audio, sr: this.audio_codec.sr,
+            audio,
+            sr: this.audio_codec.sr,
         });
     }
 }

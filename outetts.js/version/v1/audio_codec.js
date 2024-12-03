@@ -12,9 +12,8 @@ export class AudioCodec {
      * @returns {Promise<Tensor>} The generated waveform.
      */
     async decode(codes) {
-        codes = new Tensor('int64', codes, [1, codes.length]);
+        codes = new Tensor("int64", codes, [1, codes.length]);
         const { waveform } = await this.wavtokenizer({ codes });
         return waveform;
     }
 }
-

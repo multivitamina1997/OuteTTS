@@ -1,9 +1,8 @@
-
 export class PromptProcessor {
     /**
-     * 
-     * @param {import('@huggingface/transformers').PreTrainedTokenizer} tokenizer 
-     * @param {string[]} languages 
+     *
+     * @param {import('@huggingface/transformers').PreTrainedTokenizer} tokenizer
+     * @param {string[]} languages
      */
     constructor(tokenizer, languages) {
         this.tokenizer = tokenizer;
@@ -18,7 +17,7 @@ export class PromptProcessor {
             time: "<|t_{:.2f}|>",
             code_start: "<|code_start|>",
             code_end: "<|code_end|>",
-            text_sep: "<|text_sep|>"
+            text_sep: "<|text_sep|>",
         };
         this.text_prompt = "{bos}\n{text_start}{words}{text_end}\n{audio_start}\n";
         this.map_audio_tokens = this.get_audio_token_map();
@@ -29,10 +28,9 @@ export class PromptProcessor {
     get_audio_token_map() {
         const map = new Map();
         for (let i = 0; i < 4100; ++i) {
-            const token = this.tokenizer.encode(
-                this.special_tokens.audio_code.replace("{}", i),
-                { add_special_tokens: false }
-            )[0];
+            const token = this.tokenizer.encode(this.special_tokens.audio_code.replace("{}", i), {
+                add_special_tokens: false,
+            })[0];
             map.set(BigInt(token), i);
         }
         return map;
@@ -44,10 +42,11 @@ export class PromptProcessor {
         }
         if (language !== "en") {
             // TODO: Implement pre-processing for non-English languages
-            console.warn('Non-English languages are not fully supported yet, so the output may not be accurate.');
+            console.warn("Non-English languages are not fully supported yet, so the output may not be accurate.");
         }
 
-        text = text.toLowerCase()
+        text = text
+            .toLowerCase()
             // .replace(/\d+(\.\d+)?/g, match => this.lec.number_to_words(match))
             .replace(/[-_/,\.\\]/g, " ")
             .replace(/[^a-z\s]/g, "")
@@ -57,12 +56,14 @@ export class PromptProcessor {
     }
 
     create_audio_prompt(words) {
-        return words.map(i => {
-            const word = i.word;
-            const duration = this.special_tokens.time.replace("{:.2f}", i.duration.toFixed(2));
-            const tokens = i.codes.map(c => this.special_tokens.audio_code.replace("{}", c)).join("");
-            return `${word}${duration}${this.special_tokens.code_start}${tokens}${this.special_tokens.code_end}`;
-        }).join("\n");
+        return words
+            .map((i) => {
+                const word = i.word;
+                const duration = this.special_tokens.time.replace("{:.2f}", i.duration.toFixed(2));
+                const tokens = i.codes.map((c) => this.special_tokens.audio_code.replace("{}", c)).join("");
+                return `${word}${duration}${this.special_tokens.code_start}${tokens}${this.special_tokens.code_end}`;
+            })
+            .join("\n");
     }
 
     get_completion_prompt(text, language, speaker = null) {
@@ -74,7 +75,7 @@ export class PromptProcessor {
             words = this.process_text(speaker.text, speaker.language).concat(words);
         }
 
-        words = words.map(word => word.trim()).join(this.special_tokens.text_sep);
+        words = words.map((word) => word.trim()).join(this.special_tokens.text_sep);
 
         let prompt = this.text_prompt
             .replace("{bos}", this.bos)
@@ -91,8 +92,8 @@ export class PromptProcessor {
     }
 
     /**
-     * 
-     * @param {bigint[]} tokens 
+     *
+     * @param {bigint[]} tokens
      * @returns {bigint[]}
      */
     extract_audio_from_tokens(tokens) {

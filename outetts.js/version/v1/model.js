@@ -1,4 +1,3 @@
-
 export class HFModel {
     constructor(model) {
         this.model = model;

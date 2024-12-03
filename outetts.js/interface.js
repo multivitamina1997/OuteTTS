@@ -1,25 +1,22 @@
-import {
-    InterfaceHF as _InterfaceHF_v1,
-    HFModelConfig as HFModelConfig_v1,
- } from './version/v1/interface.js';
+import { InterfaceHF as _InterfaceHF_v1, HFModelConfig as HFModelConfig_v1 } from "./version/v1/interface.js";
 
 const MODEL_CONFIGS = Object.freeze({
-    "0.1": {
+    0.1: {
         tokenizer: "onnx-community/OuteTTS-0.1-350M",
         sizes: ["350M"],
         links: ["https://huggingface.co/onnx-community/OuteTTS-0.1-350M"],
         languages: ["en"],
         hf_interface: _InterfaceHF_v1,
-        max_seq_length: 4096
+        max_seq_length: 4096,
     },
-    "0.2": {
+    0.2: {
         tokenizer: "onnx-community/OuteTTS-0.2-500M",
         sizes: ["500M"],
         links: ["https://huggingface.co/onnx-community/OuteTTS-0.2-500M"],
         languages: ["en", "ja", "ko", "zh"],
         hf_interface: _InterfaceHF_v1,
-        max_seq_length: 4096
-    }
+        max_seq_length: 4096,
+    },
 });
 
 function display_available_models() {
@@ -42,9 +39,10 @@ function display_available_models() {
  * @param {keyof MODEL_CONFIGS} version Version identifier for the model.
  */
 function get_model_config(version) {
-    
     if (!(version in MODEL_CONFIGS)) {
-        throw new Error(`Unsupported model version '${version}'. Supported versions are: ${Object.keys(MODEL_CONFIGS)}`);
+        throw new Error(
+            `Unsupported model version '${version}'. Supported versions are: ${Object.keys(MODEL_CONFIGS)}`,
+        );
     }
     return MODEL_CONFIGS[version];
 }
@@ -54,7 +52,9 @@ function check_max_length(max_seq_length, model_max_seq_length) {
         throw new Error("max_seq_length must be specified.");
     }
     if (max_seq_length > model_max_seq_length) {
-        throw new Error(`Requested max_seq_length (${max_seq_length}) exceeds the maximum supported length (${model_max_seq_length}).`);
+        throw new Error(
+            `Requested max_seq_length (${max_seq_length}) exceeds the maximum supported length (${model_max_seq_length}).`,
+        );
     }
 }
 
@@ -79,7 +79,9 @@ export async function InterfaceHF({ model_version, cfg }) {
     cfg.tokenizer_path = cfg.tokenizer_path || config.tokenizer;
     const languages = config.languages;
     if (!languages.includes(cfg.language)) {
-        throw new Error(`Language '${cfg.language}' is not supported by model version '${model_version}'. Supported languages are: ${languages}`);
+        throw new Error(
+            `Language '${cfg.language}' is not supported by model version '${model_version}'. Supported languages are: ${languages}`,
+        );
     }
     cfg.languages = languages;
 
@@ -91,4 +93,3 @@ export async function InterfaceHF({ model_version, cfg }) {
 }
 
 export { HFModelConfig_v1 };
-
