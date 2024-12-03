@@ -36,14 +36,9 @@ const ONE_TRILLION = 1000000000000;
 const ONE_QUADRILLION = 1000000000000000;
 const MAX = 9007199254740992;
 
-const LESS_THAN_TWENTY = [
-    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
-];
+const LESS_THAN_TWENTY = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
 
-const TENTHS_LESS_THAN_HUNDRED = [
-    "zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
-];
+const TENTHS_LESS_THAN_HUNDRED = ["zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
 
 /**
  * Checks if a number is unsafe (too large, too small, or NaN).
@@ -64,6 +59,9 @@ function isUnsafeNumber(num) {
  * @throws {TypeError} If the number is invalid.
  */
 export function number_to_words(number) {
+    if (typeof number !== "number") {
+        throw new TypeError("Input must be a number.");
+    }
     if (isUnsafeNumber(number)) {
         throw new RangeError("Input is not a safe number, it's either too large or too small.");
     }
@@ -98,15 +96,11 @@ function number_to_words_helper(number) {
     const words = to_words(integerPart);
 
     if (fractional !== undefined) {
-        let decimals = fractional.replace(/0+$/, ""); // Remove trailing zeros
-        if (decimals.length > 0) {
-            decimals = decimals
-                .split("")
-                .map((digit) => LESS_THAN_TWENTY[parseInt(digit, 10)])
-                .join(" ");
-        } else {
-            decimals = "zero";
-        }
+        let decimals = fractional
+            .replace(/0+$/, "0") // Remove trailing zeros
+            .split("")
+            .map((digit) => LESS_THAN_TWENTY[parseInt(digit, 10)])
+            .join(" ");
         return words + " point " + decimals;
     }
 
@@ -121,7 +115,6 @@ function number_to_words_helper(number) {
  */
 function to_words(number, words = []) {
     let remainder, word;
-
 
     if (number < 20) {
         remainder = 0;

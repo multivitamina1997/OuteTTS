@@ -101,7 +101,7 @@ const TEST_CASES = {
         [Number.MAX_SAFE_INTEGER, "nine quadrillion, seven trillion, one hundred and ninety-nine billion, two hundred and fifty-four million, seven hundred and forty thousand, nine hundred and ninety-one"],
     ],
 };
-const UNSAFE_NUMBERS = [Number.MAX_SAFE_INTEGER + 1, Number.MIN_SAFE_INTEGER - 1, Number.MAX_VALUE, NaN, Infinity, -Infinity];
+const UNSAFE_NUMBERS = [Number.MAX_SAFE_INTEGER + 1, Number.MIN_SAFE_INTEGER - 1, Number.MAX_VALUE, NaN, Infinity, -Infinity, null, undefined, ""];
 
 describe("Number to Words Tests", () => {
     Object.keys(TEST_CASES).forEach((testName) => {
