@@ -27,7 +27,6 @@
 // - Matches the output of the `number_to_words` function in https://github.com/jaraco/inflect (used by the python library).
 // - Removed all functions except `number_to_words(number)` to reduce the size of the code
 // - Supports decimal numbers
-
 const TEN = 10;
 const ONE_HUNDRED = 100;
 const ONE_THOUSAND = 1000;
@@ -37,10 +36,20 @@ const ONE_TRILLION = 1000000000000;
 const ONE_QUADRILLION = 1000000000000000;
 const MAX = 9007199254740992;
 
-const LESS_THAN_TWENTY = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+const LESS_THAN_TWENTY = [
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
+];
 
-const TENTHS_LESS_THAN_HUNDRED = ["zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+const TENTHS_LESS_THAN_HUNDRED = [
+    "zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
+];
 
+/**
+ * Checks if a number is unsafe (too large, too small, or NaN).
+ * @param {number} num
+ * @returns {boolean}
+ */
 function isUnsafeNumber(num) {
     return num > Number.MAX_SAFE_INTEGER || num < Number.MIN_SAFE_INTEGER || num !== num; // checks for NaN
 }
@@ -51,6 +60,8 @@ function isUnsafeNumber(num) {
  * @example number_to_words(12.34) => 'twelve point three four'
  * @param {number} number
  * @returns {string}
+ * @throws {RangeError} If the number is unsafe.
+ * @throws {TypeError} If the number is invalid.
  */
 export function number_to_words(number) {
     if (isUnsafeNumber(number)) {
@@ -58,13 +69,19 @@ export function number_to_words(number) {
     }
     if (Object.is(number, -0)) {
         // Handle the special case for -0.
-        // NOTE: We cannot use === since `-0 === 0`.
         return "minus zero";
+    } else if (number === 0) {
+        return "zero";
     }
 
     return number_to_words_helper(number);
 }
 
+/**
+ * Helper function to convert a number into words.
+ * @param {number} number
+ * @returns {string}
+ */
 function number_to_words_helper(number) {
     const numStr = number.toLocaleString("en-US", {
         useGrouping: false,
@@ -73,15 +90,13 @@ function number_to_words_helper(number) {
 
     // If negative, prepend “minus”
     if (numStr.startsWith("-")) {
-        return "minus " + number_to_words_helper(numStr.slice(1));
-    }
-    const [integer, fractional, ...rest] = numStr.split(".");
-    if (rest.length > 0) {
-        throw new TypeError("Invalid number: " + number + " (" + typeof number + ")");
+        return "minus " + number_to_words_helper(Number(numStr.slice(1)));
     }
 
+    const [integer, fractional] = numStr.split(".");
     const integerPart = parseInt(integer, 10);
     const words = to_words(integerPart);
+
     if (fractional !== undefined) {
         let decimals = fractional.replace(/0+$/, ""); // Remove trailing zeros
         if (decimals.length > 0) {
@@ -97,14 +112,16 @@ function number_to_words_helper(number) {
 
     return words;
 }
-function to_words(number, words) {
+
+/**
+ * Recursive function to convert a number into words.
+ * @param {number} number
+ * @param {string[]} [words=[]]
+ * @returns {string}
+ */
+function to_words(number, words = []) {
     let remainder, word;
 
-    // We're done
-    if (number === 0) {
-        return !words ? "zero" : words.join(" ");
-    }
-    words ??= [];
 
     if (number < 20) {
         remainder = 0;
@@ -112,7 +129,6 @@ function to_words(number, words) {
     } else if (number < ONE_HUNDRED) {
         remainder = number % TEN;
         word = TENTHS_LESS_THAN_HUNDRED[Math.floor(number / TEN)];
-        // Handle remainder for tens
         if (remainder) {
             word += "-" + LESS_THAN_TWENTY[remainder];
             remainder = 0;
@@ -139,12 +155,10 @@ function to_words(number, words) {
 
     if (remainder && remainder < ONE_HUNDRED) {
         word += " and " + to_words(remainder);
-        remainder = 0;
     } else if (remainder) {
         word += ", " + to_words(remainder);
-        remainder = 0;
     }
 
     words.push(word);
-    return to_words(remainder, words);
+    return words.join(" ");
 }
