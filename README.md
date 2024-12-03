@@ -45,7 +45,7 @@ import outetts
 # Configure the model
 model_config = outetts.HFModelConfig_v1(
     model_path="OuteAI/OuteTTS-0.2-500M",
-    language="en",  # Supported languages: en, zh, ja, ko
+    language="en",  # Supported languages in v0.2: en, zh, ja, ko
 )
 
 # Initialize the interface
