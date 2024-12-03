@@ -250,15 +250,12 @@ export class InterfaceHF {
             console.log("Generating audio...");
         }
 
-        const gen_config = {
+        const outputs = await this.model.generate({
             max_length,
             temperature,
             repetition_penalty,
             do_sample: true,
             ...additional_gen_config,
-        };
-        const outputs = await this.model.generate({
-            ...gen_config,
             ...inputs,
         });
         const new_tokens = outputs.slice(inputs.input_ids.dims[1]);
