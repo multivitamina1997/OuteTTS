@@ -72,7 +72,7 @@ export function number_to_words(number) {
         return "zero";
     }
 
-    return number_to_words_helper(number);
+    return number_to_words_helper(number).trim();
 }
 
 /**
@@ -96,7 +96,7 @@ function number_to_words_helper(number) {
     const words = to_words(integerPart);
 
     if (fractional !== undefined) {
-        let decimals = fractional
+        const decimals = fractional
             .replace(/0+$/, "0") // Remove trailing zeros
             .split("")
             .map((digit) => LESS_THAN_TWENTY[parseInt(digit, 10)])
