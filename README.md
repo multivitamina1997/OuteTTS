@@ -13,11 +13,11 @@ OuteTTS is an experimental text-to-speech model that uses a pure language modeli
 
 OuteTTS supports the following backends:
 
-| **Backend**                 | **Repository**                                      |
-|-----------------------------|----------------------------------------------------|
-| Hugging Face Transformers   | [Hugging Face Transformers](https://github.com/huggingface/transformers) |
-| GGUF llama.cpp              | [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp) |
-| ExLlamaV2                   | [ExLlamaV2](https://github.com/turboderp/exllamav2) |
+| **Backend**                 | **v0.2 - RTF Score** | **v0.2 - 1 Second of Audio** |
+|-----------------------------|-----------------------|-----------------------------|
+| [Hugging Face Transformers](https://github.com/huggingface/transformers) | ~1.44                  | 75 Tokens                  |
+| [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp)              | ~0.36                  | 75 Tokens                  |
+| [ExLlamaV2](https://github.com/turboderp/exllamav2)                   | N/A                   | 75 Tokens                  |
 
 **Note:** The WavTokenizer and CTC model functionality rely on PyTorch.
 
