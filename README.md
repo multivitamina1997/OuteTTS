@@ -5,7 +5,7 @@
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Demo_Space-pink)](https://huggingface.co/spaces/OuteAI/OuteTTS-0.2-500M-Demo)
 [![PyPI](https://img.shields.io/badge/PyPI-OuteTTS-orange)](https://pypi.org/project/outetts/)
 
-🤗 [Hugging Face](https://huggingface.co/OuteAI) | 💬 [Discord](https://discord.gg/vyBM87kAmf) | ✖️ [X (Twitter)](https://twitter.com/OuteAI) | 🌐 [Website](https://www.outeai.com) | 📰 [Blog](https://www.outeai.com/blog)
+🤗 [Hugging Face](https://huggingface.co/OuteAI) | 💬 [Discord](https://discord.gg/vyBM87kAmf) | 𝕏 [X (Twitter)](https://twitter.com/OuteAI) | 🌐 [Website](https://www.outeai.com) | 📰 [Blog](https://www.outeai.com/blog)
 
 OuteTTS is an experimental text-to-speech model that uses a pure language modeling approach to generate speech, without architectural changes to the foundation model itself.
 
@@ -13,11 +13,11 @@ OuteTTS is an experimental text-to-speech model that uses a pure language modeli
 
 OuteTTS supports the following backends:
 
-| **Backend**                 | **v0.2 - RTF Score** | **v0.2 - 1 Second of Audio** |
-|-----------------------------|-----------------------|-----------------------------|
-| [Hugging Face Transformers](https://github.com/huggingface/transformers) | ~1.44                  | 75 Tokens                  |
-| [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp)              | ~0.36                  | 75 Tokens                  |
-| [ExLlamaV2](https://github.com/turboderp/exllamav2)                   | N/A                   | 75 Tokens                  |
+| **Backend**                 | **v0.2 - RTF Score** |
+|-----------------------------|-----------------------|
+| [Hugging Face Transformers](https://github.com/huggingface/transformers) | ~1.44                  |
+| [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp)              | ~0.36                  |
+| [ExLlamaV2](https://github.com/turboderp/exllamav2)                   | N/A                   |
 
 **Note:** The WavTokenizer and CTC model functionality rely on PyTorch.
 
