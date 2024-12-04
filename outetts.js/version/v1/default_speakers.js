@@ -1,19 +1,19 @@
-import en_female_1 from "./default_speakers/en_female_1.json" assert { type: "json" };
-import en_female_2 from "./default_speakers/en_female_2.json" assert { type: "json" };
-import en_male_1 from "./default_speakers/en_male_1.json" assert { type: "json" };
-import en_male_2 from "./default_speakers/en_male_2.json" assert { type: "json" };
-import en_male_3 from "./default_speakers/en_male_3.json" assert { type: "json" };
-import en_male_4 from "./default_speakers/en_male_4.json" assert { type: "json" };
-import ja_female_1 from "./default_speakers/ja_female_1.json" assert { type: "json" };
-import ja_female_2 from "./default_speakers/ja_female_2.json" assert { type: "json" };
-import ja_female_3 from "./default_speakers/ja_female_3.json" assert { type: "json" };
-import ja_male_1 from "./default_speakers/ja_male_1.json" assert { type: "json" };
-import ko_female_1 from "./default_speakers/ko_female_1.json" assert { type: "json" };
-import ko_female_2 from "./default_speakers/ko_female_2.json" assert { type: "json" };
-import ko_male_1 from "./default_speakers/ko_male_1.json" assert { type: "json" };
-import ko_male_2 from "./default_speakers/ko_male_2.json" assert { type: "json" };
-import zh_female_1 from "./default_speakers/zh_female_1.json" assert { type: "json" };
-import zh_male_1 from "./default_speakers/zh_male_1.json" assert { type: "json" };
+import en_female_1 from "./default_speakers/en_female_1.json" with { type: "json" };
+import en_female_2 from "./default_speakers/en_female_2.json" with { type: "json" };
+import en_male_1 from "./default_speakers/en_male_1.json" with { type: "json" };
+import en_male_2 from "./default_speakers/en_male_2.json" with { type: "json" };
+import en_male_3 from "./default_speakers/en_male_3.json" with { type: "json" };
+import en_male_4 from "./default_speakers/en_male_4.json" with { type: "json" };
+import ja_female_1 from "./default_speakers/ja_female_1.json" with { type: "json" };
+import ja_female_2 from "./default_speakers/ja_female_2.json" with { type: "json" };
+import ja_female_3 from "./default_speakers/ja_female_3.json" with { type: "json" };
+import ja_male_1 from "./default_speakers/ja_male_1.json" with { type: "json" };
+import ko_female_1 from "./default_speakers/ko_female_1.json" with { type: "json" };
+import ko_female_2 from "./default_speakers/ko_female_2.json" with { type: "json" };
+import ko_male_1 from "./default_speakers/ko_male_1.json" with { type: "json" };
+import ko_male_2 from "./default_speakers/ko_male_2.json" with { type: "json" };
+import zh_female_1 from "./default_speakers/zh_female_1.json" with { type: "json" };
+import zh_male_1 from "./default_speakers/zh_male_1.json" with { type: "json" };
 
 export default {
     en: {
