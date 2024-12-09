@@ -80,6 +80,22 @@ class GGUFModel:
         )
 
     def generate(self, input_ids: list[int], config: GenerationConfig, stream: bool = False):
+        if stream:
+            return self._generate_stream(input_ids, config)
+        return self._generate(input_ids, config)
+
+    def _generate_stream(self, input_ids: list[int], config: GenerationConfig):
+        for token in self.model.generate(
+            input_ids,
+            temp=config.temperature,
+            repeat_penalty=config.repetition_penalty,
+            **config.additional_gen_config,
+        ):
+            yield token
+            if llama_token_is_eog(self.model._model.model, token):
+                break
+
+    def _generate(self, input_ids: list[int], config: GenerationConfig) -> list:
         tokens = []
         for token in self.model.generate(
             input_ids,
@@ -87,16 +103,11 @@ class GGUFModel:
             repeat_penalty=config.repetition_penalty,
             **config.additional_gen_config,
         ):
-            if stream:
-                yield token
-            else:
-                tokens.append(token)
-            if (llama_token_is_eog(self.model._model.model, token) or
+            tokens.append(token)
+            if (llama_token_is_eog(self.model._model.model, token) or 
                 len(tokens) >= config.max_length):
                 break
-
-        if not stream:
-            return tokens
+        return tokens
 
 class EXL2Model:
     def __init__(
