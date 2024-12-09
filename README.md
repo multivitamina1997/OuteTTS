@@ -3,7 +3,8 @@
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-OuteTTS_0.2_500M-blue)](https://huggingface.co/OuteAI/OuteTTS-0.2-500M)
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-OuteTTS_0.2_500M_GGUF-blue)](https://huggingface.co/OuteAI/OuteTTS-0.2-500M-GGUF)
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Demo_Space-pink)](https://huggingface.co/spaces/OuteAI/OuteTTS-0.2-500M-Demo)
-[![PyPI](https://img.shields.io/badge/PyPI-OuteTTS-orange)](https://pypi.org/project/outetts/)
+[![PyPI](https://img.shields.io/badge/PyPI-outetts-5c6c7a)](https://pypi.org/project/outetts/)
+[![npm](https://img.shields.io/badge/npm-outetts-734440)](https://www.npmjs.com/package/outetts)
 
 🤗 [Hugging Face](https://huggingface.co/OuteAI) | 💬 [Discord](https://discord.gg/vyBM87kAmf) | 𝕏 [X (Twitter)](https://twitter.com/OuteAI) | 🌐 [Website](https://www.outeai.com) | 📰 [Blog](https://www.outeai.com/blog)
 
