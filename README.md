@@ -18,6 +18,7 @@ OuteTTS supports the following backends:
 | [Hugging Face Transformers](https://github.com/huggingface/transformers) | ~1.44                  |
 | [GGUF llama.cpp](https://github.com/ggerganov/llama.cpp)              | ~0.36                  |
 | [ExLlamaV2](https://github.com/turboderp/exllamav2)                   | N/A                   |
+| [Transformers.js](https://github.com/huggingface/transformers.js)          | N/A                    |
 
 **Note:** The WavTokenizer and CTC model functionality rely on PyTorch.
 
@@ -27,6 +28,8 @@ Check out [project roadmap](https://github.com/users/edwko/projects/1) to see wh
 
 ## Installation
 
+#### Python
+
 ```bash
 pip install outetts
 ```
@@ -34,6 +37,12 @@ pip install outetts
 **Important:**
 - For GGUF support, install `llama-cpp-python` manually. [Installation Guide](https://github.com/abetlen/llama-cpp-python?tab=readme-ov-file#installation)
 - For EXL2 support, install `exllamav2` manually. [Installation Guide](https://github.com/turboderp/exllamav2?tab=readme-ov-file#installation)
+
+#### Node.js / Browser
+
+```bash
+npm i outetts
+```
 
 ## Usage
 
@@ -192,6 +201,47 @@ model_config = outetts.HFModelConfig_v1(
     }
 )
 ```
+
+### Node.js Quick Start
+
+The JavaScript implementation follows the same patterns as the Python version, making it easy to switch between the two.
+
+```javascript
+import { HFModelConfig_v1, InterfaceHF } from "outetts";
+
+// Configure the model
+const model_config = new HFModelConfig_v1({
+    model_path: "onnx-community/OuteTTS-0.2-500M",
+    language: "en", // Supported languages in v0.2: en, zh, ja, ko
+    dtype: "fp32", // Supported dtypes: fp32, q8, q4
+});
+
+// Initialize the interface
+const tts_interface = await InterfaceHF({ model_version: "0.2", cfg: model_config });
+
+// Print available default speakers
+tts_interface.print_default_speakers();
+
+// Load a default speaker
+const speaker = tts_interface.load_default_speaker("male_1");
+
+// Generate speech
+const output = await tts_interface.generate({
+    text: "Speech synthesis is the artificial production of human speech.",
+    temperature: 0.1, // Lower temperature values may result in a more stable tone
+    repetition_penalty: 1.1,
+    max_length: 4096,
+
+    // Optional: Use a speaker profile for consistent voice characteristics
+    // Without a speaker profile, the model will generate a voice with random characteristics
+    speaker,
+});
+
+// Save the synthesized speech to a file
+output.save("output.wav");
+```
+
+For browser-based applications, check out the example implementation: https://github.com/huggingface/transformers.js-examples/tree/main/text-to-speech-webgpu
 
 ### Speaker Profile Recommendations
 
