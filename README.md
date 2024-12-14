@@ -268,7 +268,6 @@ To achieve the best results when creating a speaker profile, consider the follow
 ## Credits
 
 - WavTokenizer: [GitHub Repository](https://github.com/jishengpeng/WavTokenizer)
-    - Decoder and encoder folder files are from this repository
 - CTC Forced Alignment: [PyTorch Tutorial](https://pytorch.org/audio/stable/tutorials/ctc_forced_alignment_api_tutorial.html)
 - Uroman: [GitHub Repository](https://github.com/isi-nlp/uroman)
     - "This project uses the universal romanizer software 'uroman' written by Ulf Hermjakob, USC Information Sciences Institute (2015-2020)".

@@ -17,7 +17,6 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/edwko/OuteTTS',
     package_data={
-        "outetts.wav_tokenizer": ["wavtokenizer_config.yaml"],
         "outetts.version.v1": ["default_speakers/*"],
     },
     classifiers=[
