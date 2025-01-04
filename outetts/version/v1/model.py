@@ -36,7 +36,6 @@ class HFModel:
             else "cuda" if torch.cuda.is_available()
             else "cpu"
         )
-        self.device = torch.device(device)
         self.dtype = dtype
         self.model = AutoModelForCausalLM.from_pretrained(
             model_path,
