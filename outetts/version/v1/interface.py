@@ -285,6 +285,7 @@ class InterfaceHF:
     # Issues:
     # - Audio popping occurs when starting new chunk
     # - Needs smoother chunk transitions
+    # - Stores all history for decoding.
     # ------------------------------------------------ #
 
     def _create_audio_chunk(self, tokens: list[int], idx: int):
