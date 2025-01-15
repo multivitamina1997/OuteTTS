@@ -100,9 +100,6 @@ def InterfaceHF(
 
     config = get_model_config(model_version)
 
-    if model_version not in ["0.1", "0.2", "0.3"]:
-        raise ValueError(f"Invalid model version!")
-
     if model_version == "0.3":
         if cfg.tokenizer_path is None:
             raise ValueError(f"tokenizer_path must be provided!")
@@ -145,9 +142,6 @@ def InterfaceGGUF(
 
     config = get_model_config(model_version)
 
-    if model_version not in ["0.1", "0.2", "0.3"]:
-        raise ValueError(f"Invalid model version!")
-
     if model_version == "0.3":
         if cfg.tokenizer_path is None:
             raise ValueError(f"tokenizer_path must be provided!")
@@ -185,9 +179,6 @@ def InterfaceEXL2(
     """
 
     config = get_model_config(model_version)
-
-    if model_version not in ["0.1", "0.2", "0.3"]:
-        raise ValueError(f"Invalid model version!")
 
     if model_version == "0.3":
         if cfg.tokenizer_path is None:
