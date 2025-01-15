@@ -1,4 +1,4 @@
-__version__ = "0.3.0" 
+__version__ = "0.3.1" 
 
 from .interface import InterfaceHF, InterfaceGGUF, InterfaceEXL2, display_available_models
 from .interface import HFModelConfig_v1, GGUFModelConfig_v1, EXL2ModelConfig_v1
