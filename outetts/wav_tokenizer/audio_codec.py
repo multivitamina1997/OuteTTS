@@ -11,7 +11,7 @@ from .model import WavEncoder, WavDecoder
 from huggingface_hub import snapshot_download
 
 class AudioCodec:
-    def __init__(self, device: str = None, model_path: str = None):
+    def __init__(self, device: str = None, model_path: str = None, load_decoder: bool = True, load_encoder: bool = True):
         self.device = torch.device(device if device is not None else "cuda" if torch.cuda.is_available() else "cpu")
         self.cache_dir = self.get_cache_dir()
         if model_path is None:
@@ -32,8 +32,11 @@ class AudioCodec:
         self.sr = 24000
         self.bandwidth_id = torch.tensor([0])
 
-        self.load_decoder()
-        self.load_encoder()
+        if load_decoder:
+            self.load_decoder()
+        
+        if load_encoder:
+            self.load_encoder()
 
     def get_cache_dir(self):
         return os.path.join(

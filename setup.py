@@ -8,7 +8,7 @@ with open('requirements.txt', 'r', encoding='utf-8') as fh:
 
 setup(
     name='outetts',
-    version='0.2.2',
+    version='0.3.0',
     packages=find_packages(),
     install_requires=install_requires,
     author='OuteAI',
@@ -18,6 +18,8 @@ setup(
     url='https://github.com/edwko/OuteTTS',
     package_data={
         "outetts.version.v1": ["default_speakers/*"],
+        "outetts.version.v2": ["default_speakers/parquet/*"],
+        "outetts.anyascii": ["_data/*"],
     },
     classifiers=[
         'Programming Language :: Python :: 3',

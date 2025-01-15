@@ -1,7 +1,11 @@
 from ...wav_tokenizer.audio_codec import AudioCodec
 from .prompt_processor import PromptProcessor
-from .model import HFModel, GGUFModel, EXL2Model, GenerationConfig
+from ...models.hf_model import HFModel
+from ...models.gguf_model import GGUFModel
+from ...models.exl2_model import EXL2Model
+from ...models.config import GenerationConfig
 from ...whisper import transcribe
+from ..playback import ModelOutput
 import torch
 from .alignment import CTCForcedAlignment
 import torchaudio
@@ -12,14 +16,6 @@ import json
 import threading
 import queue
 import re
-
-try:
-    import sounddevice as sd
-    ENABLE_PLAYBACK = True
-except Exception as e:
-    ENABLE_PLAYBACK = False
-    logger.error(e)
-    logger.warning("Failed to import sounddevice. Audio playback is disabled.")
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -75,34 +71,6 @@ class GGUFModelConfig(HFModelConfig):
 @dataclass
 class EXL2ModelConfig(HFModelConfig):
     pass
-
-@dataclass
-class ModelOutput:
-    audio: torch.Tensor
-    sr: int
-    enable_playback: bool = ENABLE_PLAYBACK
-
-    def save(self, path: str):
-        if self.audio is None:
-            logger.warning("Audio is empty, skipping save.")
-            return
-
-        torchaudio.save(path, self.audio.cpu(), sample_rate=self.sr, encoding='PCM_S', bits_per_sample=16)
-
-    def play(self):
-        if self.audio is None:
-            logger.warning("Audio is empty, skipping playback.")
-            return
-
-        if not self.enable_playback:
-            logger.warning("Audio playback is disabled. Check sounddevice installation.")
-            return
-
-        try:
-            sd.play(self.audio[0].cpu().numpy(), self.sr)
-            sd.wait()
-        except Exception as e:
-            logger.error(e)
 
 class InterfaceHF:
     def __init__(
@@ -285,7 +253,6 @@ class InterfaceHF:
     # Issues:
     # - Audio popping occurs when starting new chunk
     # - Needs smoother chunk transitions
-    # - Stores all history for decoding.
     # ------------------------------------------------ #
 
     def _create_audio_chunk(self, tokens: list[int], idx: int):

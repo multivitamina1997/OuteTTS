@@ -1,11 +1,21 @@
 import torch
+from typing import Union
+from loguru import logger
+from typing import Union, overload
+
 from .version.v1.interface import InterfaceHF as _InterfaceHF_v1
 from .version.v1.interface import InterfaceGGUF as _InterfaceGGUF_v1
 from .version.v1.interface import InterfaceEXL2 as _InterfaceEXL2_v1
 from .version.v1.interface import HFModelConfig as HFModelConfig_v1
 from .version.v1.interface import GGUFModelConfig as GGUFModelConfig_v1
 from .version.v1.interface import EXL2ModelConfig as EXL2ModelConfig_v1
-from loguru import logger
+
+from .version.v2.interface import InterfaceHF as _InterfaceHF_v2
+from .version.v2.interface import InterfaceGGUF as _InterfaceGGUF_v2
+from .version.v2.interface import InterfaceEXL2 as _InterfaceEXL2_v2
+from .version.v2.interface import HFModelConfig as HFModelConfig_v2
+from .version.v2.interface import GGUFModelConfig as GGUFModelConfig_v2
+from .version.v2.interface import EXL2ModelConfig as EXL2ModelConfig_v2
 
 MODEL_CONFIGS = {
     "0.1": {
@@ -25,6 +35,19 @@ MODEL_CONFIGS = {
         "hf_interface": _InterfaceHF_v1,
         "gguf_interface": _InterfaceGGUF_v1,
         "exl2_interface": _InterfaceEXL2_v1,
+        "max_seq_length": 4096
+    },
+    "0.3": {
+        "tokenizer": "OuteAI/OuteTTS-0.3-500M",
+        "sizes": ["1B", "500M"],
+
+        "links": ["https://huggingface.co/OuteAI/OuteTTS-0.3-500M", "https://huggingface.co/OuteAI/OuteTTS-0.3-500M-GGUF",
+                  "https://huggingface.co/OuteAI/OuteTTS-0.3-1B", "https://huggingface.co/OuteAI/OuteTTS-0.3-1B-GGUF"],
+
+        "languages": ["en", "ja", "ko", "zh", "de", "fr"],
+        "hf_interface": _InterfaceHF_v2,
+        "gguf_interface": _InterfaceGGUF_v2,
+        "exl2_interface": _InterfaceEXL2_v2,
         "max_seq_length": 4096
     },
 }
@@ -55,11 +78,11 @@ def check_max_length(max_seq_length: int, model_max_seq_length: int):
         raise ValueError("max_seq_length must be specified.")
     if max_seq_length > model_max_seq_length:
         raise ValueError(f"Requested max_seq_length ({max_seq_length}) exceeds the maximum supported length ({model_max_seq_length}).")
-
+    
 def InterfaceHF(
         model_version: str,
-        cfg: HFModelConfig_v1
-    ) -> _InterfaceHF_v1:
+        cfg: Union[HFModelConfig_v1, HFModelConfig_v2]
+    ) -> Union[_InterfaceHF_v1, _InterfaceHF_v2]:
     """
     Creates and returns a Hugging Face model interface for OuteTTS.
 
@@ -67,7 +90,7 @@ def InterfaceHF(
     ----------
     model_version : str
         Version identifier for the model to be loaded
-    cfg : HFModelConfig_v1
+    cfg : HFModelConfig_v1 | HFModelConfig_v2
         Configuration object containing parameters
 
     Returns
@@ -77,10 +100,12 @@ def InterfaceHF(
 
     config = get_model_config(model_version)
     cfg.tokenizer_path = cfg.tokenizer_path or config["tokenizer"]
-    languages = config["languages"]
-    if cfg.language not in languages:
-        raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
-    cfg.languages = languages
+
+    if model_version in ["0.1", "0.2"]:
+        languages = config["languages"]
+        if cfg.language not in languages:
+            raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
+        cfg.languages = languages
 
     interface_class = config["hf_interface"]
 
@@ -90,8 +115,8 @@ def InterfaceHF(
 
 def InterfaceGGUF(
         model_version: str,
-        cfg: GGUFModelConfig_v1
-    ) -> _InterfaceGGUF_v1:
+        cfg: Union[GGUFModelConfig_v1, GGUFModelConfig_v2]
+    ) -> Union[_InterfaceGGUF_v1, _InterfaceGGUF_v2]:
     """
     Creates and returns a GGUF model interface for OuteTTS.
 
@@ -99,7 +124,7 @@ def InterfaceGGUF(
     ----------
     model_version : str
         Version identifier for the model to be loaded
-    cfg : GGUFModelConfig_v1
+    cfg : GGUFModelConfig_v1 | GGUFModelConfig_v2
         Configuration object containing parameters
 
     Returns
@@ -112,10 +137,12 @@ def InterfaceGGUF(
 
     config = get_model_config(model_version)
     cfg.tokenizer_path = cfg.tokenizer_path or config["tokenizer"]
-    languages = config["languages"]
-    if cfg.language not in languages:
-        raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
-    cfg.languages = languages
+
+    if model_version in ["0.1", "0.2"]:
+        languages = config["languages"]
+        if cfg.language not in languages:
+            raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
+        cfg.languages = languages
 
     check_max_length(cfg.max_seq_length, config["max_seq_length"])
 
@@ -124,8 +151,8 @@ def InterfaceGGUF(
 
 def InterfaceEXL2(
         model_version: str,
-        cfg: EXL2ModelConfig_v1
-    ) -> _InterfaceEXL2_v1:
+        cfg: Union[EXL2ModelConfig_v1, EXL2ModelConfig_v2]
+    ) -> Union[_InterfaceEXL2_v1, _InterfaceEXL2_v2]:
     """
     Creates and returns a GGUF model interface for OuteTTS.
 
@@ -133,7 +160,7 @@ def InterfaceEXL2(
     ----------
     model_version : str
         Version identifier for the model to be loaded
-    cfg : EXL2ModelConfig_v1
+    cfg : EXL2ModelConfig_v1 | EXL2ModelConfig_v2
         Configuration object containing parameters
 
     Returns
@@ -143,10 +170,12 @@ def InterfaceEXL2(
 
     config = get_model_config(model_version)
     cfg.tokenizer_path = cfg.tokenizer_path or config["tokenizer"]
-    languages = config["languages"]
-    if cfg.language not in languages:
-        raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
-    cfg.languages = languages
+
+    if model_version in ["0.1", "0.2"]:
+        languages = config["languages"]
+        if cfg.language not in languages:
+            raise ValueError(f"Language '{cfg.language}' is not supported by model version '{model_version}'. Supported languages are: {languages}")
+        cfg.languages = languages
 
     check_max_length(cfg.max_seq_length, config["max_seq_length"])
 
