@@ -11,6 +11,7 @@ import outetts
 # Configure the model
 model_config = outetts.HFModelConfig_v2(
     model_path="OuteAI/OuteTTS-0.3-1B",
+    tokenizer_path="OuteAI/OuteTTS-0.3-1B"
 )
 # Initialize the interface
 interface = outetts.InterfaceHF(model_version="0.3", cfg=model_config)
@@ -47,6 +48,7 @@ import outetts
 
 model_config = outetts.HFModelConfig_v2(
     model_path="OuteAI/OuteTTS-0.3-1B",
+    tokenizer_path="OuteAI/OuteTTS-0.3-1B"
 )
 
 interface = outetts.InterfaceHF(model_version="0.3", cfg=model_config)
@@ -59,6 +61,7 @@ import outetts
 
 model_config = outetts.GGUFModelConfig_v2(
     model_path="local/path/to/model.gguf",
+    tokenizer_path="OuteAI/OuteTTS-0.3-1B" # or "OuteAI/OuteTTS-0.3-500M"
     n_gpu_layers=0,
 )
 
@@ -72,6 +75,7 @@ import outetts
 
 model_config = outetts.EXL2ModelConfig_v2(
     model_path="local/path/to/model",
+    tokenizer_path="OuteAI/OuteTTS-0.3-1B" # or "OuteAI/OuteTTS-0.3-500M"
 )
 
 interface = outetts.InterfaceEXL2(model_version="0.3", cfg=model_config)
@@ -145,6 +149,7 @@ You can initialize custom backend configurations for specific needs.
 ```python
 model_config = outetts.HFModelConfig_v2(
     model_path="OuteAI/OuteTTS-0.3-1B",
+    tokenizer_path="OuteAI/OuteTTS-0.3-1B"
     dtype=torch.bfloat16,
     additional_model_config={
         'attn_implementation': "flash_attention_2"
