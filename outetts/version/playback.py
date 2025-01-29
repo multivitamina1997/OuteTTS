@@ -54,7 +54,7 @@ class ModelOutput:
     def _invalid_backend(self):
         logger.warning(f"Invalid backend selected!")
 
-    def play(self, backend: str):
+    def play(self, backend="pygame"):
         """
         backend: str -> "sounddevice", "pygame"
         """
