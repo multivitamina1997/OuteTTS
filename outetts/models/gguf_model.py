@@ -1,12 +1,17 @@
 from loguru import logger
 from .config import GenerationConfig
 from tqdm import tqdm
+from packaging import version
 
 try:
     from llama_cpp import Llama, llama_token_is_eog
+    from llama_cpp import __version__ as llama_cpp_version
     _GGUF_AVAILABLE = True
 except:
     _GGUF_AVAILABLE = False
+
+CURRENT_VERSION = version.parse(llama_cpp_version)
+VERSION_0_3_7 = version.parse("0.3.7")
 
 class GGUFModel:
     def __init__(
@@ -30,6 +35,12 @@ class GGUFModel:
             **additional_model_config
         )
 
+    def is_eog(self):
+        if CURRENT_VERSION >= VERSION_0_3_7:
+            return self.model._model.vocab
+        else:
+            return self.model._model.model
+
     def generate(self, input_ids: list[int], config: GenerationConfig, stream: bool = False):
         if stream:
             return self._generate_stream(input_ids, config)
@@ -46,7 +57,7 @@ class GGUFModel:
         ):
             yield token
             size += 1
-            if (llama_token_is_eog(self.model._model.model, token) or 
+            if (llama_token_is_eog(self.is_eog(), token) or 
                 size + input_size >= config.max_length):
                 break
 
@@ -61,7 +72,7 @@ class GGUFModel:
         ))
         for token in gen:
             tokens.append(token)
-            if (llama_token_is_eog(self.model._model.model, token) or 
+            if (llama_token_is_eog(self.is_eog(), token) or 
                 len(tokens) + input_size >= config.max_length):
                 break
             gen.set_postfix({"tokens": input_size + len(tokens), "max tokens": config.max_length})
