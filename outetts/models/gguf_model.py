@@ -8,6 +8,7 @@ try:
     from llama_cpp import __version__ as llama_cpp_version
     _GGUF_AVAILABLE = True
 except:
+    llama_cpp_version = "0.0.0"
     _GGUF_AVAILABLE = False
 
 CURRENT_VERSION = version.parse(llama_cpp_version)
