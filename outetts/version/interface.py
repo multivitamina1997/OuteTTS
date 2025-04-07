@@ -184,7 +184,7 @@ class InterfaceHF:
         text_chunks = chunk_text(config.text)
         chunk_size = len(text_chunks)
         word_token = self.prompt_processor.tokenizer.encode(
-            self.prompt_processor.special_tokens.word, add_special_tokens=False
+            self.prompt_processor.special_tokens.word_start, add_special_tokens=False
         )[0]
         end_token = self.prompt_processor.tokenizer.encode(
             self.prompt_processor.special_tokens.audio_end, add_special_tokens=False
@@ -271,7 +271,7 @@ class InterfaceHF:
         if config.generation_type == info.GenerationType.CHUNKED:
             output = self.chunk_generation(config)
         elif config.generation_type == info.GenerationType.GUIDED_WORDS:
-            logger.info("Guided words generation is experimental and may not work as expected.")
+            logger.warning("Guided words generation is experimental and may not work as expected.")
             if self.config.interface_version != info.InterfaceVersion.V3:
                 raise ValueError("Guided words generation is only supported for InterfaceVersion.V3")
             if self.config.backend == info.Backend.HF or self.config.backend == info.Backend.EXL2:
