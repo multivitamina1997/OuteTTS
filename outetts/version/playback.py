@@ -12,7 +12,7 @@ except:
 try: 
     import pygame
 except: 
-    logger.warning("[playback] Failed to pygame sounddevice.")
+    logger.warning("[playback] Failed to import pygame.")
 
 class ModelOutput:
     def __init__(self, audio: torch.Tensor, og_sr: int):
@@ -27,11 +27,24 @@ class ModelOutput:
         if self.audio is None:
             logger.warning("Audio is empty, skipping save.")
             return
-        torchaudio.save(path, self.audio.cpu(), sample_rate=self.sr, encoding='PCM_S', bits_per_sample=16)
+        
+        audio_2d = self.audio.detach().cpu()
+        if audio_2d.dim() == 1:
+            audio_2d = audio_2d.unsqueeze(0)
+        elif audio_2d.dim() > 2:
+            audio_2d = audio_2d[0] if audio_2d.dim() == 3 else audio_2d[0, 0]
+            if audio_2d.dim() == 1:
+                audio_2d = audio_2d.unsqueeze(0)
+
+        if not path.endswith(".wav"):
+            path += ".wav"
+
+        torchaudio.save(path, audio_2d, sample_rate=self.sr, encoding='PCM_S', bits_per_sample=16)
+        logger.info(f"Saved audio to: {path}")
 
     def _sounddevice(self):
         try:
-            sd.play(self.audio[0].cpu().numpy(), self.sr)
+            sd.play(self.audio.flatten().detach().cpu().numpy(), self.sr)
             sd.wait()
         except Exception as e:
             logger.error(e)
@@ -39,7 +52,7 @@ class ModelOutput:
     def _pygame(self):
         try:
             pygame.mixer.init(frequency=self.sr, channels=2)
-            audio_data = self.audio[0].cpu().numpy()
+            audio_data = self.audio[0].detach().cpu().numpy()
             sound_array = (audio_data * 32767).astype('int16')
             if sound_array.ndim == 1:
                 sound_array = np.expand_dims(sound_array, axis=1)
@@ -54,10 +67,12 @@ class ModelOutput:
     def _invalid_backend(self):
         logger.warning(f"Invalid backend selected!")
 
-    def play(self, backend="pygame"):
+    def play(self, backend: str = "sounddevice"):
         """
         backend: str -> "sounddevice", "pygame"
         """
+        logger.warning("Playback might not always work reliably. Always verify by playing the saved file.")
+
         if self.audio is None:
             logger.warning("Audio is empty, skipping playback.")
             return

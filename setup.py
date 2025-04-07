@@ -8,7 +8,7 @@ with open('requirements.txt', 'r', encoding='utf-8') as fh:
 
 setup(
     name='outetts',
-    version='0.3.3',
+    version='0.4.0',
     packages=find_packages(),
     install_requires=install_requires,
     author='OuteAI',
@@ -17,8 +17,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/edwko/OuteTTS',
     package_data={
-        "outetts.version.v1": ["default_speakers/*"],
-        "outetts.version.v2": ["default_speakers/parquet/*"],
+        "outetts.version.v3": ["default_speakers/json/*"],
         "outetts.anyascii": ["_data/*"],
     },
     classifiers=[

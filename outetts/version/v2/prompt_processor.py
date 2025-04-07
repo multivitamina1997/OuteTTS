@@ -1,4 +1,5 @@
 from transformers import AutoTokenizer
+
 from .tokens import SpecialTokens
 from .text_processor import TextProcessor
 

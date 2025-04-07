@@ -6,7 +6,7 @@ import uroman as ur
 import MeCab
 
 class PromptProcessor:
-    def __init__(self, tokenizer_path: str, languages: list[str]):
+    def __init__(self, tokenizer_path: str):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         self.bos = "<|im_start|>"
         self.eos = "<|im_end|>"
@@ -28,7 +28,6 @@ class PromptProcessor:
         self.uroman = ur.Uroman()
         self.wakati = MeCab.Tagger("-Owakati")
         self.wakati_use = ["ja", "zh", "ko"]
-        self.languages = languages
 
     def get_audio_token_map(self) -> dict:
         return {
@@ -36,13 +35,9 @@ class PromptProcessor:
             for i in range(4100)
         }
 
-    def process_text(self, text: str, language: str):
-        if language not in self.languages:
-            raise ValueError(f"Language {language} not supported, supported languages are {self.languages}")
-        if language != "en":
-            if language in self.wakati_use:
-                text = self.wakati.parse(text)
-            text = self.uroman.romanize_string(text)
+    def process_text(self, text: str):
+        text = self.wakati.parse(text)
+        text = self.uroman.romanize_string(text)
         text = re.sub(r'\d+(\.\d+)?', lambda x: self.lec.number_to_words(x.group()), text.lower())
         text = re.sub(r'[-_/,\.\\]', ' ', text)
         text = re.sub(r'[^a-z\s]', '', text)
@@ -58,12 +53,10 @@ class PromptProcessor:
             prompt.append(f'{word}{duration}{self.special_tokens["code_start"]}{tokens}{self.special_tokens["code_end"]}')
         return "\n".join(prompt)
         
-    def get_completion_prompt(self, text: str, language: str, speaker: dict = None) -> str:
-        words = self.process_text(text, language)
+    def get_completion_prompt(self, text: str, speaker: dict = None) -> str:
+        words = self.process_text(text)
         if speaker is not None:
-            if speaker["language"] != language:
-                logger.warning(f"Speaker language {speaker['language']} does not match text language {language}")
-            words = self.process_text(speaker["text"], speaker["language"]) + words
+            words = self.process_text(speaker["text"]) + words
 
         words = f"{self.special_tokens['text_sep']}".join([i.strip() for i in words])
 
@@ -80,8 +73,8 @@ class PromptProcessor:
 
         return prompt
     
-    def get_training_prompt(self, text: str, language: str, speaker: dict) -> str:
-        words = self.process_text(text, language)
+    def get_training_prompt(self, text: str, speaker: dict) -> str:
+        words = self.process_text(text)
         words = f"{self.special_tokens['text_sep']}".join([i.strip() for i in words])
 
         prompt = self.text_prompt.format(

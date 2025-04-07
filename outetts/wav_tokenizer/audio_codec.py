@@ -1,14 +1,11 @@
 import torchaudio
 import torch
-import requests
-from tqdm import tqdm
 import os
 import platform
 from loguru import logger
-import hashlib
-import os
-from .model import WavEncoder, WavDecoder
 from huggingface_hub import snapshot_download
+
+from .model import WavEncoder, WavDecoder
 
 class AudioCodec:
     def __init__(self, device: str = None, model_path: str = None, load_decoder: bool = True, load_encoder: bool = True):
@@ -55,7 +52,6 @@ class AudioCodec:
         self.decoder.eval()
 
     def convert_audio(self, wav: torch.Tensor, sr: int, target_sr: int, target_channels: int):
-        # Implementation from: https://github.com/jishengpeng/WavTokenizer/blob/afdec2512c0778746250f6fc40d4bac7ff82b742/encoder/utils.py#L79
         assert wav.dim() >= 2, "Audio tensor must have at least 2 dimensions"
         assert wav.shape[-2] in [1, 2], "Audio must be mono or stereo."
         *shape, channels, length = wav.shape

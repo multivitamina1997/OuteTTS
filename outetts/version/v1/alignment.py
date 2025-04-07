@@ -39,7 +39,7 @@ import MeCab
 
 class CTCForcedAlignment:
 
-    def __init__(self, languages: list[str], device: str = None):
+    def __init__(self, device: str = None):
         self.device = torch.device(device if device is not None else "cuda" if torch.cuda.is_available() else "cpu")
         bundle = torchaudio.pipelines.MMS_FA
         self.sample_rate = bundle.sample_rate
@@ -49,16 +49,10 @@ class CTCForcedAlignment:
         self.lec = inflect.engine()
         self.uroman = ur.Uroman()
         self.wakati = MeCab.Tagger("-Owakati")
-        self.wakati_use = ["ja", "zh", "ko"]
-        self.languages = languages
         
-    def process_text(self, text: str, language: str):
-        if language not in self.languages:
-            raise ValueError(f"Language {language} not supported, supported languages are {self.languages}")
-        if language != "en":
-            if language in self.wakati_use:
-                text = self.wakati.parse(text)
-            text = self.uroman.romanize_string(text)
+    def process_text(self, text: str):
+        text = self.wakati.parse(text)
+        text = self.uroman.romanize_string(text)
         text = re.sub(r'\d+(\.\d+)?', lambda x: self.lec.number_to_words(x.group()), text.lower())
         text = re.sub(r'[-_/,\.\\]', ' ', text)
         text = re.sub(r'[^a-z\s]', '', text)
@@ -92,12 +86,12 @@ class CTCForcedAlignment:
         scores = scores.exp()  
         return alignments, scores
 
-    def align(self, audio, transcript, language):
+    def align(self, audio, transcript):
         waveform, sr = torchaudio.load(audio)
         if waveform.shape[0] > 1:
             waveform = waveform.mean(dim=0, keepdim=True)
         waveform = torchaudio.functional.resample(waveform, orig_freq=sr, new_freq=self.sample_rate)
-        transcript = self.process_text(transcript, language)
+        transcript = self.process_text(transcript)
 
         with torch.inference_mode():
             emission, _ = self.model(waveform.to(self.device))

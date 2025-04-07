@@ -2,11 +2,17 @@ import re
 import inflect
 import uroman as ur
 import MeCab
-from . import utils
 import string
+from loguru import logger
+
 from ...anyascii import anyascii
 from .tokens import SpecialTokens
-from loguru import logger
+
+def clean_dashes(text: str) -> str:
+    dashes = ['—', '–', '-']
+    for dash in dashes:
+        text = text.replace(dash, ' ')
+    return text
 
 class TextProcessor:
     def __init__(self):
@@ -53,7 +59,7 @@ class TextProcessor:
     def _process_text(self, text: str):
         text = self.normalize_token_spacing(text)
         text = anyascii(text)
-        text = utils.clean_dashes(text)
+        text = clean_dashes(text)
         text = self.NUMBER_PATTERN.sub(lambda x: self.lec.number_to_words(x.group()), text.lower())
         text = self.PUNCT_PATTERN.sub('', text)
         text = self.MULTIPLE_SPACES_PATTERN.sub(' ', text).strip().lower()
@@ -100,7 +106,7 @@ class TextProcessor:
     def process_text_clean_only(self, text: str):
         text = self.normalize_token_spacing(text)
         text = anyascii(text)
-        text = utils.clean_dashes(text)
+        text = clean_dashes(text)
         text = self.NUMBER_PATTERN.sub(lambda x: self.lec.number_to_words(x.group()), text.lower())
         text = self.PUNCT_PATTERN.sub('', text)
         text = self.MULTIPLE_SPACES_PATTERN.sub(' ', text).strip().lower()

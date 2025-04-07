@@ -1,7 +1,9 @@
 from loguru import logger
-from .config import GenerationConfig
 from tqdm import tqdm
 from packaging import version
+
+from .info import GenerationType
+from .config import GenerationConfig
 
 try:
     from llama_cpp import Llama, llama_token_is_eog
@@ -10,6 +12,11 @@ try:
 except:
     llama_cpp_version = "0.0.0"
     _GGUF_AVAILABLE = False
+    raise ImportError(
+        "llama.cpp Python bindings not found. This is required for GGUF model support.\n\n"
+        "To install, please follow our installation guide:\n"
+        "https://github.com/edwko/OuteTTS?tab=readme-ov-file#installation\n\n"
+    )
 
 CURRENT_VERSION = version.parse(llama_cpp_version)
 VERSION_0_3_7 = version.parse("0.3.7")
@@ -26,13 +33,13 @@ class GGUFModel:
         if not _GGUF_AVAILABLE:
             raise ImportError(
                 "llama_cpp python module not found."
-                "To use the GGUF model you must install llama cpp python manually."
             )
 
         additional_model_config["n_ctx"] = max_seq_length
         self.model = Llama(
             model_path=model_path,
             n_gpu_layers=n_gpu_layers,
+            last_n_tokens_size=64,
             **additional_model_config
         )
 
@@ -42,40 +49,34 @@ class GGUFModel:
         else:
             return self.model._model.model
 
-    def generate(self, input_ids: list[int], config: GenerationConfig, stream: bool = False):
-        if stream:
+    def generate(self, input_ids: list[int], config: GenerationConfig):
+        if config.generation_type == GenerationType.STREAM:
             return self._generate_stream(input_ids, config)
         return self._generate(input_ids, config)
 
     def _generate_stream(self, input_ids: list[int], config: GenerationConfig):
-        size = 0
         input_size = len(input_ids)
-        for token in self.model.generate(
-            input_ids,
-            temp=config.temperature,
-            repeat_penalty=config.repetition_penalty,
-            **config.additional_gen_config,
-        ):
-            yield token
-            size += 1
-            if (llama_token_is_eog(self.is_eog(), token) or 
-                size + input_size >= config.max_length):
-                break
-
-    def _generate(self, input_ids: list[int], config: GenerationConfig) -> list:
-        input_size = len(input_ids)
-        tokens = []
         gen = tqdm(self.model.generate(
             input_ids,
-            temp=config.temperature,
-            repeat_penalty=config.repetition_penalty,
+            temp=config.sampler_config.temperature,
+            repeat_penalty=config.sampler_config.repetition_penalty,
+            top_k=config.sampler_config.top_k,
+            top_p=config.sampler_config.top_p,
+            min_p=config.sampler_config.min_p,
+            mirostat_eta=config.sampler_config.mirostat_eta,
+            mirostat_tau=config.sampler_config.mirostat_tau,
             **config.additional_gen_config,
         ))
         for token in gen:
-            tokens.append(token)
+            yield token
+            input_size += 1
             if (llama_token_is_eog(self.is_eog(), token) or 
-                len(tokens) + input_size >= config.max_length):
+                input_size >= config.max_length):
                 break
-            gen.set_postfix({"tokens": input_size + len(tokens), "max tokens": config.max_length})
+            gen.set_postfix({"tokens": input_size,  "max tokens": config.max_length})
 
-        return tokens
+    def _generate(self, input_ids: list[int], config: GenerationConfig) -> list:
+        new_tokens = []
+        for token in self._generate_stream(input_ids, config):
+            new_tokens.append(token)
+        return new_tokens

@@ -1,14 +1,8 @@
 import torch
 from loguru import logger
 
-from .alignment import CTCForcedAlignment
 from ...whisper import transcribe
-
-def clean_dashes(text: str) -> str:
-    dashes = ['—', '–', '-']
-    for dash in dashes:
-        text = text.replace(dash, ' ')
-    return text
+from .alignment import CTCForcedAlignment
 
 def create_speaker(
         device,
@@ -16,8 +10,9 @@ def create_speaker(
         audio_path: str,
         transcript: str = None,
         whisper_model: str = "turbo",
-        whisper_device = None,
+        whisper_device = None
     ):
+
     if transcript is None:
         logger.info("Transcription not provided, transcribing audio with whisper.")
         transcript = transcribe.transcribe_once(
@@ -25,12 +20,14 @@ def create_speaker(
             model=whisper_model,
             device=whisper_device
         )
-    if not transcript: 
+
+    if not transcript:
         raise ValueError("Transcript text is empty")
 
     ctc = CTCForcedAlignment(device)
-
     words = ctc.align(audio_path, transcript)
+    ctc.free()
+
     full_codes = audio_codec.encode(
         audio_codec.convert_audio_tensor(
             audio=torch.cat([i["audio"] for i in words], dim=1),
@@ -52,9 +49,6 @@ def create_speaker(
             "duration": round(len(word_tokens) / 75, 2),
             "codes": word_tokens
         })
-
-    ctc.free()
-    del ctc
 
     return {
         "text": transcript,
