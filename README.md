@@ -31,7 +31,7 @@ OuteTTS now installs the llama.cpp Python bindings by default. Therefore, you mu
 <summary>Transformers + llama.cpp CPU</summary>
 
 ```bash
-pip install outetts
+pip install outetts --upgrade
 ```
 </details>
 
@@ -40,7 +40,7 @@ pip install outetts
 For systems with NVIDIA GPUs and CUDA installed:
 
 ```bash
-CMAKE_ARGS="-DGGML_CUDA=on" pip install outetts
+CMAKE_ARGS="-DGGML_CUDA=on" pip install outetts --upgrade
 ```
 
 </details>
@@ -50,7 +50,7 @@ CMAKE_ARGS="-DGGML_CUDA=on" pip install outetts
 For systems with AMD GPUs and ROCm (specify your DAMDGPU_TARGETS) installed:
 
 ```bash
-CMAKE_ARGS="-DGGML_HIPBLAS=on" pip install outetts
+CMAKE_ARGS="-DGGML_HIPBLAS=on" pip install outetts --upgrade
 ```
 
 </details>
@@ -60,7 +60,7 @@ CMAKE_ARGS="-DGGML_HIPBLAS=on" pip install outetts
 For systems with Vulkan support:
 
 ```bash
-CMAKE_ARGS="-DGGML_VULKAN=on" pip install outetts
+CMAKE_ARGS="-DGGML_VULKAN=on" pip install outetts --upgrade
 ```
 </details>
 
@@ -69,7 +69,7 @@ CMAKE_ARGS="-DGGML_VULKAN=on" pip install outetts
 For macOS systems with Apple Silicon or compatible GPUs:
 
 ```bash
-CMAKE_ARGS="-DGGML_METAL=on" pip install outetts
+CMAKE_ARGS="-DGGML_METAL=on" pip install outetts --upgrade
 ```
 </details>
 
