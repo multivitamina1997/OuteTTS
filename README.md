@@ -177,5 +177,3 @@ For optimal results with this TTS model, use the following sampling settings.
 | Top-k             | 40       |
 | Top-p             | 0.9      |
 | Min-p             | 0.05     |
-
-For production or high-quality needs, I strongly recommend using **llama.cpp** for the best results.
