@@ -146,7 +146,7 @@ For example, if you use a Japanese speaker and continue speech in English, the m
 ### Multilingual Application
 It is recommended to create a speaker profile in the language you intend to use. This helps achieve the best results in that specific language, including tone, accent, and linguistic features.
 
-While the model supports cross-lingual translation, it still relies on the reference speaker. If the speaker has a distinct accent—such as British English—other languages may carry that accent as well.
+While the model supports cross-lingual speech, it still relies on the reference speaker. If the speaker has a distinct accent—such as British English—other languages may carry that accent as well.
 
 ### Optimal Audio Length
 - **Best Performance:** Generate audio around **42 seconds** in a single run (approximately 8,192 tokens). It is recomended not to near the limits of this windows when generating. Usually, the best results are up to 7,000 tokens.
