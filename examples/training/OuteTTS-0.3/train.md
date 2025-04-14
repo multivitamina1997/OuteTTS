@@ -1,5 +1,10 @@
 # OuteTTS Version 0.3 Training Guide
 
+> [!WARNING]
+> **Only Compatible with [OuteTTS version 0.3 models](https://huggingface.co/collections/OuteAI/outetts-03-6786b1ebc7aeb757bc17a2fa)**
+>
+> Data script will not work with newer or older model versions. Each model version has its own data creation requirements.
+
 ## Overview
 
 The OuteTTS v0.3 model follows a typical language model training pipeline:
