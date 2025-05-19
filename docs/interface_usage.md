@@ -214,16 +214,6 @@ output.play()
 output.save("output.wav")
 ```
 
-### Generation Types
-
-| Type                      | Description                                                                                                |
-|---------------------------|------------------------------------------------------------------------------------------------------------|
-| `GenerationType.REGULAR`  | Standard generation for shorter texts                                                                      |
-| `GenerationType.CHUNKED`  | Splits text into chunks for better processing of longer texts (recommended for single-text generation)     |
-| `GenerationType.GUIDED_WORDS`| Experimental guided generation by words                                                                    |
-| `GenerationType.STREAM`   | Streaming generation **(Not Implemented)**                                                                 |
-| `GenerationType.BATCH`    | Optimized batch generation for processing multiple text chunks simultaneously (requires specific backends) |
-
 ### Batch Generation
 
 For backends optimized for batch processing (`EXL2ASYNC`, `VLLM`, `LLAMACPP_ASYNC_SERVER`), you can leverage `GenerationType.BATCH`. This mode processes multiple text chunks in parallel, which can significantly improve throughput for longer texts or when generating multiple audio outputs.
