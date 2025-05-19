@@ -140,7 +140,7 @@ class PromptProcessor:
         text = re.sub(r'([?!])\1+', r'\1', text) # !! -> !, ??? -> ?
 
         text = re.sub(r'\s+', ' ', text)
-        text = text.strip()
+        text = text.replace('"',"").strip()
 
         return text
 
