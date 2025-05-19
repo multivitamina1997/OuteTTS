@@ -26,10 +26,13 @@ class GenerationConfig:
     voice_characteristics: str = None
     speaker: dict = None
     generation_type: info.GenerationType = info.GenerationType.CHUNKED
+    max_batch_size: int = 16
+    dac_decoding_chunk: int = 2048
     sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
     max_length: int = 8192
     additional_gen_config: dict = field(default_factory=lambda: {})
     additional_dynamic_generator_config: dict = field(default_factory=lambda: {})
+    server_host: str = "http://localhost:8080"
 
 def get_compatible_dtype():
     """
@@ -97,6 +100,7 @@ class ModelConfig:
         audio_codec_path: str = None,
         max_seq_length: int = 8192,
         n_gpu_layers: int = 0,
+        exl2_cache_seq_multiply: int = 16,
         **kwargs
     ):
         self.model_path = model_path
@@ -110,6 +114,7 @@ class ModelConfig:
         self.audio_codec_path = audio_codec_path
         self.max_seq_length = max_seq_length
         self.n_gpu_layers = n_gpu_layers
+        self.exl2_cache_seq_multiply = exl2_cache_seq_multiply
 
         # Accept and set any extra keyword arguments as attributes
         for key, value in kwargs.items():
@@ -145,7 +150,7 @@ class ModelConfig:
     @classmethod
     def auto_config(cls, model: info.Models, backend: info.Backend, quantization: info.LlamaCppQuantization = None):
         logger.info(f"Initializing model configuration for {model.value} model with {backend.value} backend.")
-        if model != info.Models.VERSION_1_0_SIZE_1B:
+        if model != info.Models.VERSION_1_0_SIZE_1B and model != info.Models.VERSION_1_0_SIZE_0_6B:
             raise ValueError("Only OuteTTS 1.0 model supported for auto configuration.")
         
         model_path = LoadAutoModel().init_model(model, backend, quantization)
@@ -178,8 +183,8 @@ class ModelConfig:
             config["n_gpu_layers"] = 99
             logger.info("LLAMA.CPP backend selected. Offloading all layers to GPU.")
 
-        if backend == info.Backend.EXL2:
-            raise NotImplementedError("Automatic model loading for EXL2 models is not yet supported.")
+        else:
+            raise NotImplementedError(f"Automatic model loading for {backend.value} is not yet supported.")
         
         logger.info("Using config:")
         pprint(config, indent=2)

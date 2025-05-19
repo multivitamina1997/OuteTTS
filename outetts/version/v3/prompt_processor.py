@@ -1,5 +1,7 @@
 from transformers import AutoTokenizer
 import re
+import unicodedata
+import ftfy
 
 from .tokens import SpecialTokens
 
@@ -107,21 +109,39 @@ class PromptProcessor:
         return output, rs.strip()
     
     def text_normalizations(self, text: str) -> str:
-        # Normalize whitespace characters (newlines, tabs, etc.) to single spaces
+        if not isinstance(text, str):
+            # Or raise TypeError, depending on desired behavior
+            return str(text) if text is not None else ""
+
+        text = ftfy.fix_text(text)
+
+        text = unicodedata.normalize('NFKC', text)
+
+        text = text.replace("…", "...")
+        text = re.sub(r'\.{2,}', '...', text)
+
+        text = re.sub(r'[“”„‟«»]', '"', text)
+        text = re.sub(r"[‘’‛‹›`´]", "'", text)
+
+        text = re.sub(r'[–—―−‐]', '-', text)
+        text = re.sub(r'-{2,}', '-', text)
+
+        text = re.sub(r'[\x00-\x1F\x7F-\x9F\u00AD\u200B-\u200D\uFEFF]', '', text)
+
         text = re.sub(r'\s+', ' ', text)
-        text = text.replace("…", "...")  # Replace ellipsis character with three dots
-        
-        # Strip leading/trailing whitespace
+
+        text = re.sub(r'\s+([,.?!:;])', r'\1', text)
+        text = re.sub(r'([,.?!:;])(?=[^\s,.?!:;])', r'\1 ', text)
+        text = re.sub(r"(\w)\s+'\s*(\w)", r"\1'\2", text) # e.g. "word ' s" -> "word's"
+        text = re.sub(r"(\w)\s+'\s*([,.?!:;\s]|$)", r"\1'\2", text) # e.g. "word ' ." -> "word'."
+
+        text = re.sub(r"(\w)\s*'\s*([tsdmreSNTDMRE])\b", r"\1'\2", text, flags=re.IGNORECASE) # e.g., "can 't" -> "can't"
+
+        text = re.sub(r'([?!])\1+', r'\1', text) # !! -> !, ??? -> ?
+
+        text = re.sub(r'\s+', ' ', text)
         text = text.strip()
-        
-        # Normalize common Unicode characters to ASCII equivalents
-        text = re.sub(r'[“”]', '"', text)   # Curly quotes to straight quotes
-        text = re.sub(r'[‘’]', "'", text)   # Curly single quotes
-        text = re.sub(r'[–—]', '-', text)   # Various dashes to hyphen
-        
-        # Remove control characters
-        text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', text)
-        
+
         return text
 
     def get_completion_prompt(self, text: str, speaker: dict = None):

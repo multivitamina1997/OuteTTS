@@ -4,6 +4,10 @@ class Backend(Enum):
     HF = "hf"
     LLAMACPP = "llamacpp"
     EXL2 = "exl2"
+    EXL2ASYNC = "exl2async"
+    VLLM = "vllm"
+    LLAMACPP_SERVER = "llamacpp_server"
+    LLAMACPP_ASYNC_SERVER = "llamacpp_async_server"
 
 class InterfaceVersion(Enum):
     V1 = 1
@@ -16,12 +20,14 @@ class Models(Enum):
     VERSION_0_3_SIZE_500M = "OuteTTS-0.3-500M"
     VERSION_0_3_SIZE_1B = "OuteTTS-0.3-1B"
     VERSION_1_0_SIZE_1B = "Llama-OuteTTS-1.0-1B"
+    VERSION_1_0_SIZE_0_6B = "OuteTTS-1.0-0.6B"
 
 class GenerationType(Enum):
     REGULAR = "regular"
     CHUNKED = "chunked"
     GUIDED_WORDS = "guided_words"
     STREAM = "stream"
+    BATCH = "batch"
 
 class LlamaCppQuantization(Enum):
     FP16 = "FP16"
@@ -58,6 +64,10 @@ MODEL_INFO = {
         "interface_version": InterfaceVersion.V2,
     },
     Models.VERSION_1_0_SIZE_1B: {
+        "max_seq_length": 8192,
+        "interface_version": InterfaceVersion.V3,
+    },
+    Models.VERSION_1_0_SIZE_0_6B: {
         "max_seq_length": 8192,
         "interface_version": InterfaceVersion.V3,
     },

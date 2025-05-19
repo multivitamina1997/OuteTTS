@@ -80,14 +80,21 @@ config = outetts.ModelConfig(
 | `VERSION_0_3_SIZE_500M` | OuteTTS v0.3 (500M parameters) |
 | `VERSION_0_3_SIZE_1B` | OuteTTS v0.3 (1B parameters) |
 | `VERSION_1_0_SIZE_1B` | Llama-OuteTTS v1.0 (1B parameters) |
+| `VERSION_1_0_SIZE_0_6B` | OuteTTS v1.0 (0.6B parameters) |
 
 ### Backend Options
 
-| Backend | Description |
-|---------|-------------|
-| `Backend.HF` | Hugging Face Transformers backend |
-| `Backend.LLAMACPP` | LLAMA.cpp backend (for GGUF models) |
-| `Backend.EXL2` | EXL2 backend |
+| Backend                      | Description                                                                                                |
+|------------------------------|------------------------------------------------------------------------------------------------------------|
+| `Backend.HF`                 | Hugging Face Transformers backend                                                                          |
+| `Backend.LLAMACPP`           | LLAMA.cpp backend (for GGUF models)                                                                        |
+| `Backend.EXL2`               | EXL2 backend                                                                                               |
+| `Backend.EXL2ASYNC`          | EXL2 backend with asynchronous batch processing                                                            |
+| `Backend.VLLM`               | VLLM backend for efficient batch processing (Experimental)                                                 |
+| `Backend.LLAMACPP_SERVER`    | Direct connection to a running LLAMA.cpp server (synchronous stream)                                       |
+| `Backend.LLAMACPP_ASYNC_SERVER`| Direct connection to a running LLAMA.cpp server (asynchronous batch)                                       |
+
+**Note on VLLM Backend:** The `Backend.VLLM` option is currently experimental and may sometimes result in missing audio chunks or static noise during generation. To enable this backend, you must set the environment variable `OUTETTS_ALLOW_VLLM=1` before running your application.
 
 ### Interface Versions
 
@@ -158,12 +165,13 @@ interface.decode_and_save_speaker(speaker, "speaker_audio.wav")
 
 ### Generation Types
 
-| Type | Description |
-|------|-------------|
-| `GenerationType.REGULAR` | Standard generation for shorter texts |
-| `GenerationType.CHUNKED` | Splits text into chunks for better processing of longer texts (recommended) |
-| `GenerationType.GUIDED_WORDS` | Experimental guided generation by words |
-| `GenerationType.STREAM` | Streaming generation **(Not Implemented)** |
+| Type                      | Description                                                                                                |
+|---------------------------|------------------------------------------------------------------------------------------------------------|
+| `GenerationType.REGULAR`  | Standard generation for shorter texts                                                                      |
+| `GenerationType.CHUNKED`  | Splits text into chunks for better processing of longer texts (recommended for single-text generation)     |
+| `GenerationType.GUIDED_WORDS`| Experimental guided generation by words                                                                    |
+| `GenerationType.STREAM`   | Streaming generation **(Not Implemented)**                                                                 |
+| `GenerationType.BATCH`    | Optimized batch generation for processing multiple text chunks simultaneously (requires specific backends) |
 
 ### Sampler Configuration
 
@@ -204,6 +212,58 @@ output.play()
 
 # Save to file
 output.save("output.wav")
+```
+
+### Generation Types
+
+| Type                      | Description                                                                                                |
+|---------------------------|------------------------------------------------------------------------------------------------------------|
+| `GenerationType.REGULAR`  | Standard generation for shorter texts                                                                      |
+| `GenerationType.CHUNKED`  | Splits text into chunks for better processing of longer texts (recommended for single-text generation)     |
+| `GenerationType.GUIDED_WORDS`| Experimental guided generation by words                                                                    |
+| `GenerationType.STREAM`   | Streaming generation **(Not Implemented)**                                                                 |
+| `GenerationType.BATCH`    | Optimized batch generation for processing multiple text chunks simultaneously (requires specific backends) |
+
+### Batch Generation
+
+For backends optimized for batch processing (`EXL2ASYNC`, `VLLM`, `LLAMACPP_ASYNC_SERVER`), you can leverage `GenerationType.BATCH`. This mode processes multiple text chunks in parallel, which can significantly improve throughput for longer texts or when generating multiple audio outputs.
+
+When using these backends, `GenerationType.BATCH` is the only supported type and will be automatically selected even if a different type is specified in `GenerationConfig`.
+
+```python
+from outetts import Interface, ModelConfig, GenerationConfig, Backend, GenerationType
+
+if __name__ == "__main__":
+    # Initialize the interface with a batch-capable backend
+    interface = Interface(
+        ModelConfig(
+            model_path="OuteAI/Llama-OuteTTS-1.0-0.6B-FP8", # Replace with your model path
+            tokenizer_path="OuteAI/Llama-OuteTTS-1.0-0.6B", # Replace with your tokenizer path
+            backend=Backend.VLLM
+            # For EXL2, use backend=Backend.EXL2ASYNC + exl2_cache_seq_multiply={should be same as max_batch_size in GenerationConfig}
+            # For LLAMACPP_ASYNC_SERVER, use backend=Backend.LLAMACPP_ASYNC_SERVER and provide server_host in GenerationConfig
+        )
+    )
+
+    # Load your speaker profile
+    speaker = interface.load_default_speaker("EN-FEMALE-1-NEUTRAL") # Or load/create custom speaker
+
+    # Generate speech using BATCH type
+    # Note: For EXL2ASYNC, VLLM, LLAMACPP_ASYNC_SERVER, BATCH is automatically selected.
+    output = interface.generate(
+        GenerationConfig(
+            text="This is a longer text that will be automatically split into chunks and processed in batches.",
+            speaker=speaker,
+            generation_type=GenerationType.BATCH, # Can often be omitted for batch backends
+            max_batch_size=32,       # Adjust based on your GPU memory and server capacity
+            dac_decoding_chunk=2048, # Adjust chunk size for DAC decoding
+            # If using LLAMACPP_ASYNC_SERVER, add:
+            # server_host="http://localhost:8000" # Replace with your server address
+        )
+    )
+
+    # Save to file
+    output.save("output_batch.wav")
 ```
 
 ### Advanced Configuration Options

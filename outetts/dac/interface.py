@@ -119,22 +119,43 @@ class DacInterface:
             codes.append(c.to(device))
         codes = torch.cat(codes, dim=-1)
         return codes
+    
+    def apply_fade(self, audio):
+        fade_in_sec  = 0.015
+        fade_out_sec = 0.015
+
+        total_len = audio.shape[-1]
+
+        fade_in_len  = int(self.sr * fade_in_sec)
+        fade_out_len = int(self.sr * fade_out_sec)
+
+        max_fade = total_len // 2
+        fade_in_len  = min(fade_in_len, max_fade)
+        fade_out_len = min(fade_out_len, max_fade)
+
+        fade_in  = torch.linspace(0., 1., fade_in_len,  device=audio.device)
+        fade_out = torch.linspace(1., 0., fade_out_len, device=audio.device)
+
+        audio[..., :fade_in_len]                         *= fade_in
+        audio[..., total_len - fade_out_len : total_len] *= fade_out
+
+        return audio
 
     @torch.no_grad()
     def decode(
         self,
         codes: torch.Tensor,
         verbose: bool = False,
+        chunk_length: int = 2048
     ) -> torch.Tensor:
         model = self.model
         range_fn = range if not verbose else tqdm.trange
         original_device = codes.device
-        chunk_length = 4096
         recons = []
         for i in range_fn(0, codes.shape[-1], chunk_length):
             c = codes[..., i : i + chunk_length].to(model.device)
             z = model.quantizer.from_codes(c)[0]
             r = model.decode(z)
-            recons.append(r.to(original_device))
+            recons.append(self.apply_fade(r.to(original_device)))
         recons = torch.cat(recons, dim=-1)
         return process_audio_tensor(recons)

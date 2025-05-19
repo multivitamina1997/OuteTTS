@@ -1,23 +1,31 @@
-## OuteTTS - Unified Text-To-Speech models treating audio as language
+## OuteTTS
 
 🌐 [Website](https://www.outeai.com) | 🤗 [Hugging Face](https://huggingface.co/OuteAI) | 💬 [Discord](https://discord.gg/vyBM87kAmf) | 𝕏 [X (Twitter)](https://twitter.com/OuteAI) | 📰 [Blog](https://www.outeai.com/blog)
 
 [![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Llama_OuteTTS_1.0_1B-blue)](https://huggingface.co/OuteAI/Llama-OuteTTS-1.0-1B)
-[![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Llama_OuteTTS_1.0_1B_GGUF-blue)](https://huggingface.co/OuteAI/Llama-OuteTTS-1.0-1B-GGUF)
+[![HuggingFace](https://img.shields.io/badge/🤗%20Hugging%20Face-Llama_OuteTTS_1.0_0.6B-blue)](https://huggingface.co/OuteAI/OuteAI/OuteTTS-1.0-0.6B)
 [![PyPI](https://img.shields.io/badge/PyPI-outetts-5c6c7a)](https://pypi.org/project/outetts/)
 [![npm](https://img.shields.io/badge/npm-outetts-734440)](https://www.npmjs.com/package/outetts)
 
-## Compatibility  
+## Compatibility
 
 OuteTTS supports the following backends:  
 
 | **Backend** | **Type** | **Installation** |  
 |-----------------------------|---------|----------------------------|  
 | [Llama.cpp Python Bindings](https://github.com/abetlen/llama-cpp-python) | Python | ✅ Installed by default |  
+| [Llama.cpp Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default |  
+| [Llama.cpp Server Async (Batched)](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default |  
 | [Hugging Face Transformers](https://github.com/huggingface/transformers) | Python | ✅ Installed by default |  
-| [ExLlamaV2](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation |  
+| [ExLlamaV2 & ExLlamaV2 Async (Batched)](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation |  
+| [VLLM (Batched) **Experimental support**](https://github.com/vllm-project/vllm) | Python | ❌ Requires manual installation |  
 | [Transformers.js](https://github.com/huggingface/transformers.js) | JavaScript | NPM package |
 | [Llama.cpp Directly](https://github.com/ggml-org/llama.cpp/tree/master/examples/tts) | C++ | External library |  
+
+### ⚡ **Batched RTF Benchmarks**  
+Tested with **NVIDIA L40S GPU** 
+
+![rtf](docs/assets/rtf.png)
 
 ## Installation
 
@@ -75,6 +83,12 @@ CMAKE_ARGS="-DGGML_METAL=on" pip install outetts --upgrade
 
 ## Usage
 
+## 📚 Documentation
+
+For a complete usage guide, refer to the interface documentation here: 
+
+[![Documentation](https://img.shields.io/badge/📖_Read_The_Docs-Interface_Guide-blue?style=for-the-badge)](https://github.com/edwko/OuteTTS/blob/main/docs/interface_usage.md)
+
 ### Basic Usage
 
 ```python
@@ -104,11 +118,7 @@ speaker = interface.load_default_speaker("EN-FEMALE-1-NEUTRAL")
 output = interface.generate(
     config=outetts.GenerationConfig(
         text="Hello, how are you doing?",
-        generation_type=outetts.GenerationType.CHUNKED,
         speaker=speaker,
-        sampler_config=outetts.SamplerConfig(
-            temperature=0.4
-        ),
     )
 )
 
@@ -116,26 +126,16 @@ output = interface.generate(
 output.save("output.wav")
 ```
 
-## Interface Documentation
-
-For a complete usage guide, refer to the interface documentation here: 
-
-🔗 [interface_usage.md](https://github.com/edwko/OuteTTS/blob/main/docs/interface_usage.md)
-
 ## Usage Recommendations for OuteTTS version 1.0
 > [!IMPORTANT]
 > **Important Sampling Considerations**  
 > 
-> When using OuteTTS version 1.0, it is crucial to use the settings specified in the [Sampling Configuration](https://github.com/edwko/OuteTTS?tab=readme-ov-file#sampling-configuration) section.
-> 
+> When using OuteTTS version 1.0, it is crucial to use the settings specified in the [Sampling Configuration](#sampling-configuration) section.
 > The **repetition penalty implementation** is particularly important - this model requires penalization applied to a **64-token recent window**,
 > rather than across the entire context window. Penalizing the entire context will cause the model to produce **broken or low-quality output**.
 > 
-> Currently, **llama.cpp** delivers the most reliable and consistent output quality by default.
-> Both **llama.cpp** and **EXL2** support this windowed sampling approach, while **Transformers** doesn't.
-> 
-> To address this limitation, I've implemented a **windowed repetition penalty** for the **Hugging Face Transformers** backend in the **OuteTTS** library,
-> which significantly improves output quality and resolves sampling issues, providing comparable results to llama.cpp.
+> To address this limitation, all necessary samplers and patches for all backends are set up automatically in the **outetts** library.
+> If using a custom implementation, ensure you correctly implement these requirements.
 
 ### Speaker Reference
 The model is designed to be used with a speaker reference. Without one, it generates random vocal characteristics, often leading to lower-quality outputs. 

@@ -3,11 +3,14 @@ from loguru import logger
 import os
 import json
 import polars as pl
+import re
 
 from ..models.config import ModelConfig, GenerationConfig, info
 from ..models.hf_model import HFModel
 from ..models.gguf_model import GGUFModel
-from ..models.exl2_model import EXL2Model
+from ..models.exl2_model import EXL2Model, EXL2ModelAsync
+from ..models.vllm_model import VLLMModelBatch
+from ..models.llamacpp_server import LlamaCPPServerModel, LlamaCPPServerAsyncModel
 from ..utils.chunking import chunk_text
 from ..utils import preprocessing
 from .playback import ModelOutput
@@ -263,10 +266,58 @@ class InterfaceHF:
         input_ids = self.prepare_prompt(config.text, config.speaker)
         return self._generate(input_ids, config)
     
+    def batch_generation(self, config: GenerationConfig):
+        text_chunks = chunk_text(config.text)
+        logger.info(f"Total text batches created: {len(text_chunks)}")
+
+        input_ids = [self.prepare_prompt(i, config.speaker) for i in text_chunks]
+        outputs = []
+
+        output = self._generate_batch(input_ids, config)
+        outputs.extend([i['text'] for i in output])
+
+        print("\n")
+        logger.success("Batch generation finished!")
+
+        c1 = []
+        c2 = []
+        for i in outputs:
+            codebook1 = [int(x) for x in re.findall(r'<\|c1_(\d+)\|>', i)]
+            codebook2 = [int(x) for x in re.findall(r'<\|c2_(\d+)\|>', i)]
+
+            if not codebook1 or not codebook2:
+                logger.error("Codebook is empty. The audio chunk might be missing segment, which could result in incomplete audio when combined. Skipping...")
+                continue
+                
+            min_len = min(len(codebook1), len(codebook2))
+            c1.extend(codebook1[:min_len])
+            c2.extend(codebook2[:min_len])
+        
+        logger.info("Decoding audio")
+
+        outputs = self.audio_codec.decode(
+            torch.tensor([[c1,c2]], dtype=torch.int64),
+            verbose=True,
+            chunk_length=config.dac_decoding_chunk
+        )
+
+        return outputs
+
+    def _batch_check(self, config: GenerationConfig):
+        if config.generation_type != info.GenerationType.BATCH:
+            logger.info("vLLM, EXL2 Async, Llama.cpp async server only support GenerationType.BATCH.")
+            logger.info(f"Generation type '{config.generation_type.value}' is not supported. Switching to 'BATCH' mode.")
+            return info.GenerationType.BATCH
+    
     def generate(self, config: GenerationConfig) -> ModelOutput:
         self.check_generation_max_length(config.max_length)
         if config.text is None:
             raise ValueError("text can not be empty!")
+
+        if self.config.backend in [info.Backend.VLLM, info.Backend.EXL2ASYNC, info.Backend.LLAMACPP_ASYNC_SERVER]:
+            _batch_check = self._batch_check(config)
+            if _batch_check is not None:
+                config.generation_type = _batch_check
         
         if config.generation_type == info.GenerationType.CHUNKED:
             output = self.chunk_generation(config)
@@ -280,9 +331,14 @@ class InterfaceHF:
         elif config.generation_type == info.GenerationType.REGULAR:
             logger.info("Using regular generation, consider using chunked generation for long texts.")
             output = self.regular_generation(config)
+        elif config.generation_type == info.GenerationType.BATCH:
+            if self.config.backend == info.Backend.HF or self.config.backend == info.Backend.LLAMACPP or self.config.backend == info.Backend.LLAMACPP_SERVER:
+                raise ValueError("Batch generation supports only GenerationType.VLLM, GenerationType.EXL2ASYNC, info.Backend.LLAMACPP_ASYNC_SERVER backends.")
+            audio = self.batch_generation(config)
+            return ModelOutput(audio, self.audio_codec.sr)
         else:
             raise ValueError(f"Unsupported generation type: {config.generation_type}")
-
+        
         audio = self.get_audio(output)
         return ModelOutput(audio, self.audio_codec.sr)
 
@@ -328,3 +384,91 @@ class InterfaceEXL2(InterfaceHF):
             input_ids=input_ids,
             config=config,
         )
+    
+class InterfaceEXL2Async(InterfaceHF):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.config = config
+
+    def get_model(self):
+        if "exl2_cache_size" not in self.config.additional_model_config:
+            self.config.additional_model_config["exl2_cache_size"] = self.config.max_seq_length * self.config.exl2_cache_seq_multiply
+        return EXL2ModelAsync(
+            model_path=self.config.model_path,
+            max_seq_length=self.config.max_seq_length,
+            additional_model_config=self.config.additional_model_config,
+        )
+
+    def _prepare_prompt(self, prompt: str):
+        return prompt
+    
+    def _generate_batch(self, input_ids, config):
+        return self.model.generate_batch(
+            input_ids=input_ids,
+            config=config,
+        )
+
+class InterfaceVLLMBatch(InterfaceHF):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.config = config
+
+    def get_model(self):
+        return VLLMModelBatch(
+            model_path=self.config.model_path,
+            max_seq_length=self.config.max_seq_length,
+            additional_model_config=self.config.additional_model_config,
+        )
+
+    def _prepare_prompt(self, prompt: str):
+        return prompt
+    
+    def _generate_batch(self, input_ids, config):
+        return self.model.generate_batch(
+            input_ids=input_ids,
+            config=config,
+        )
+
+class InterfaceLlamaCPPServerAsyncBatch(InterfaceHF):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.config = config
+
+    def get_model(self):
+        return LlamaCPPServerAsyncModel(
+            model_path=self.config.model_path,
+            max_seq_length=self.config.max_seq_length,
+            additional_model_config=self.config.additional_model_config,
+        )
+
+    def _prepare_prompt(self, prompt: str):
+        return prompt
+    
+    def _generate_batch(self, input_ids, config):
+        return self.model.generate_batch(
+            input_ids=input_ids,
+            config=config,
+        )
+
+class InterfaceLlamaCPPServer(InterfaceHF):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.config = config
+
+    def get_model(self):
+        return LlamaCPPServerModel(
+            model_path=self.config.model_path,
+            max_seq_length=self.config.max_seq_length,
+            additional_model_config=self.config.additional_model_config,
+            tokenizer=self.prompt_processor.tokenizer
+        )
+
+    def _prepare_prompt(self, prompt: str):
+        return prompt
+    
+    def _generate(self, input_ids, config):
+        return self.model.generate(
+            input_ids=input_ids,
+            config=config,
+        )
+    
