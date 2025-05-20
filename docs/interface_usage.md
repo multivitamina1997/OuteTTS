@@ -131,14 +131,18 @@ speaker = interface.load_default_speaker("EN-FEMALE-1-NEUTRAL")
 
 ### Creating Custom Speaker Profiles
 
+To create a speaker profile, point to your audio file. The system will use the Whisper model to transcribe the audio and audio codec model to generate a profile. Once done, save the speaker to a JSON file so you can reuse it later.
+> [!NOTE]
+> This step only needs to be run once per speaker. It is meant for initial profile creation. You do not need to re-run it every time you use the speaker.
+
 ```python
-# Create a speaker profile from an audio file
 speaker = interface.create_speaker("path/to/audio.wav")
-
-# Save the speaker profile for later use
 interface.save_speaker(speaker, "my_speaker.json")
+```
 
-# Load a saved speaker profile
+You can then load your custom speaker from the JSON file at any time:
+
+```python
 speaker = interface.load_speaker("my_speaker.json")
 ```
 
