@@ -133,7 +133,7 @@ speaker = interface.load_default_speaker("EN-FEMALE-1-NEUTRAL")
 
 To create a speaker profile, point to your audio file. The system will use the Whisper model to transcribe the audio and audio codec model to generate a profile. Once done, save the speaker to a JSON file so you can reuse it later.
 > [!NOTE]
-> This step only needs to be run once per speaker. It is meant for initial profile creation. You do not need to re-run it every time you use the speaker.
+> This step only needs to be run once per speaker. It is meant for initial profile creation.
 
 ```python
 speaker = interface.create_speaker("path/to/audio.wav")
