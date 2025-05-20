@@ -91,6 +91,13 @@ For a complete usage guide, refer to the interface documentation here:
 
 ### Basic Usage
 
+> [!TIP]
+> Currently, only **one default English voice** is available for testing.
+>
+> You can easily create your own speaker profiles in just a few lines by following this guide:
+>
+> 👉 [Creating Custom Speaker Profiles](https://github.com/edwko/OuteTTS/blob/main/docs/interface_usage.md#creating-custom-speaker-profiles)
+
 ```python
 import outetts
 
