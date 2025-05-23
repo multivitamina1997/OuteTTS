@@ -8,7 +8,7 @@ pyyaml
 huggingface_hub
 encodec
 matplotlib
-transformers==4.51.3
+transformers=4.52.3
 soundfile
 numpy
 inflect
