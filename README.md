@@ -9,7 +9,7 @@
 
 ## Compatibility
 
-OuteTTS supports the following backends:  
+#### OuteTTS supports the following backends:  
 
 | **Backend** | **Type** | **Installation** |  
 |-----------------------------|---------|----------------------------|  
@@ -20,7 +20,17 @@ OuteTTS supports the following backends:
 | [ExLlamaV2 & ExLlamaV2 Async (Batched)](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation |  
 | [VLLM (Batched) **Experimental support**](https://github.com/vllm-project/vllm) | Python | ❌ Requires manual installation |  
 | [Transformers.js](https://github.com/huggingface/transformers.js) | JavaScript | NPM package |
-| [Llama.cpp Directly](https://github.com/ggml-org/llama.cpp/tree/master/examples/tts) | C++ | External library |  
+
+#### External Libraries with OuteTTS Model Support
+
+These are third-party tools that support running the OuteTTS model.
+
+| **Library** | **Language** | **Model Version Support** |
+|-------------|--------------|----------------------------|
+| [Llama.cpp TTS Example](https://github.com/ggml-org/llama.cpp/tree/master/tools/tts) | C++ | `0.2` |
+| [KoboldCPP](https://github.com/LostRuins/koboldcpp) | C++ | `0.2`, `0.3` |
+| [MLX-Audio](https://github.com/Blaizzy/mlx-audio) | Python (MLX) | `1.0` |
+| [ChatLLM.cpp](https://github.com/foldl/chatllm.cpp) | C++ | `1.0` |
 
 ### ⚡ **Batched RTF Benchmarks**  
 Tested with **NVIDIA L40S GPU** 
