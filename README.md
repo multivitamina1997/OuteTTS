@@ -21,17 +21,6 @@
 | [VLLM (Batched) **Experimental support**](https://github.com/vllm-project/vllm) | Python | ❌ Requires manual installation |  
 | [Transformers.js](https://github.com/huggingface/transformers.js) | JavaScript | NPM package |
 
-#### External Libraries with OuteTTS Model Support
-
-These are third-party tools that support running the OuteTTS model.
-
-| **Library** | **Language** | **Model Version Support** |
-|-------------|--------------|----------------------------|
-| [Llama.cpp TTS Example](https://github.com/ggml-org/llama.cpp/tree/master/tools/tts) | C++ | `0.2` |
-| [KoboldCPP](https://github.com/LostRuins/koboldcpp) | C++ | `0.2`, `0.3` |
-| [MLX-Audio](https://github.com/Blaizzy/mlx-audio) | Python (MLX) | `1.0` |
-| [ChatLLM.cpp](https://github.com/foldl/chatllm.cpp) | C++ | `1.0` |
-
 ### ⚡ **Batched RTF Benchmarks**  
 Tested with **NVIDIA L40S GPU** 
 
@@ -142,6 +131,18 @@ output = interface.generate(
 # Save to file
 output.save("output.wav")
 ```
+
+## External Libraries with OuteTTS Model Support
+
+These are third-party tools that support running the OuteTTS model.
+
+| **Library** | **Language** | **Model Version Support** |
+|-------------|--------------|----------------------------|
+| [Llama.cpp TTS Example](https://github.com/ggml-org/llama.cpp/tree/master/tools/tts) | C++ | `0.2` |
+| [KoboldCPP](https://github.com/LostRuins/koboldcpp) | C++ | `0.2`, `0.3` |
+| [MLX-Audio](https://github.com/Blaizzy/mlx-audio) | Python (MLX) | `1.0` |
+| [ChatLLM.cpp](https://github.com/foldl/chatllm.cpp) | C++ | `1.0` |
+
 
 ## Usage Recommendations for OuteTTS version 1.0
 > [!IMPORTANT]
