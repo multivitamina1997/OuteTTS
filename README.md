@@ -11,7 +11,7 @@
 
 #### OuteTTS supports the following backends:  
 
-| **Backend** | **Type** | **Installation** |  
+| **Backend** | **Language** | **Installation** |  
 |-----------------------------|---------|----------------------------|  
 | [Llama.cpp Python Bindings](https://github.com/abetlen/llama-cpp-python) | Python | ✅ Installed by default |  
 | [Llama.cpp Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default |  
