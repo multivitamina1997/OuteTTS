@@ -182,3 +182,15 @@ For optimal results with this TTS model, use the following sampling settings.
 | Top-k             | 40       |
 | Top-p             | 0.9      |
 | Min-p             | 0.05     |
+
+## Acknowledgments
+
+DAC (Descript Audio Codec): [Github](https://github.com/descriptinc/descript-audio-codec)
+
+WavTokenizer: [Github](https://github.com/jishengpeng/WavTokenizer)
+
+CTC Forced Alignment: [PyTorch tutorial](https://docs.pytorch.org/audio/stable/tutorials/ctc_forced_alignment_api_tutorial.html)
+
+Uroman: [Github](https://github.com/isi-nlp/uroman), "This project uses the universal romanizer software 'uroman' written by Ulf Hermjakob, USC Information Sciences Institute (2015-2020)".
+
+mecab-python3: [Github](https://github.com/SamuraiT/mecab-python3)
