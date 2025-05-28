@@ -11,15 +11,16 @@
 
 #### OuteTTS supports the following backends:  
 
-| **Backend** | **Language** | **Installation** |  
-|-----------------------------|---------|----------------------------|  
-| [Llama.cpp Python Bindings](https://github.com/abetlen/llama-cpp-python) | Python | ✅ Installed by default |  
-| [Llama.cpp Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default |  
-| [Llama.cpp Server Async (Batched)](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default |  
-| [Hugging Face Transformers](https://github.com/huggingface/transformers) | Python | ✅ Installed by default |  
-| [ExLlamaV2 & ExLlamaV2 Async (Batched)](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation |  
-| [VLLM (Batched) **Experimental support**](https://github.com/vllm-project/vllm) | Python | ❌ Requires manual installation |  
-| [Transformers.js](https://github.com/huggingface/transformers.js) | JavaScript | NPM package |
+| **Backend** | **Language** | **Installation** | **Model Version Support** |
+|-----------------------------|---------|----------------------------|---------|  
+| [Llama.cpp Python Bindings](https://github.com/abetlen/llama-cpp-python) | Python | ✅ Installed by default | `All` |
+| [Llama.cpp Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default | `All` |
+| [Llama.cpp Server Async (Batched)](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) | Python | ✅ Installed by default | `1.0` |
+| [Hugging Face Transformers](https://github.com/huggingface/transformers) | Python | ✅ Installed by default | `All` | 
+| [ExLlamaV2](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation | `All` |
+| [ExLlamaV2 Async (Batched)](https://github.com/turboderp/exllamav2) | Python | ❌ Requires manual installation | `1.0` |
+| [VLLM (Batched) **Experimental support**](https://github.com/vllm-project/vllm) | Python | ❌ Requires manual installation | `1.0` |
+| [Transformers.js](https://github.com/huggingface/transformers.js) | JavaScript | NPM package | `0.2` |
 
 ### ⚡ **Batched RTF Benchmarks**  
 Tested with **NVIDIA L40S GPU** 
