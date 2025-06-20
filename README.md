@@ -35,7 +35,7 @@ OuteTTS now installs the llama.cpp Python bindings by default. Therefore, you mu
 
 ### Pip:
 
-<details>
+<details open>
 <summary>Transformers + llama.cpp CPU</summary>
 
 ```bash
